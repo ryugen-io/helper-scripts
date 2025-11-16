@@ -26,37 +26,40 @@ jobs:
         env:
           EXPECTED_SKIP_HASH: ${{ secrets.SKIP_FILE_HASH }}
         run: |
-          if [ ! -f .skip ]; then
+          SKIP_FILE=".github/skips/.skip"
+
+          if [ ! -f "$SKIP_FILE" ]; then
             echo "skip=false" >> $GITHUB_OUTPUT
-            echo "✅ No .skip file found - proceeding with Claude CI/CD"
+            echo "No .skip file found - proceeding with Claude CI/CD"
             exit 0
           fi
 
           # Calculate SHA256 hash of .skip file content
-          SKIP_FILE_HASH=$(sha256sum .skip | awk '{print $1}')
-          echo "📋 .skip file found with hash: $SKIP_FILE_HASH"
+          SKIP_FILE_HASH=$(sha256sum "$SKIP_FILE" | awk '{print $1}')
+          echo ".skip file found with hash: $SKIP_FILE_HASH"
 
           # If EXPECTED_SKIP_HASH secret is set, validate it
           if [ -n "$EXPECTED_SKIP_HASH" ]; then
             if [ "$SKIP_FILE_HASH" = "$EXPECTED_SKIP_HASH" ]; then
               echo "skip=true" >> $GITHUB_OUTPUT
-              echo "⏭️ Valid .skip file found (hash verified) - Claude CI/CD will be skipped"
+              echo "Valid .skip file found (hash verified) - Claude CI/CD will be skipped"
             else
               echo "skip=false" >> $GITHUB_OUTPUT
-              echo "⚠️ .skip file found but hash mismatch - proceeding with Claude CI/CD for security"
+              echo "WARNING: .skip file found but hash mismatch - proceeding with Claude CI/CD for security"
               echo "Expected: $EXPECTED_SKIP_HASH"
               echo "Got:      $SKIP_FILE_HASH"
             fi
           else
             # Fallback: If no secret is set, check for specific content
-            SKIP_CONTENT=$(cat .skip | tr -d '[:space:]')
+            SKIP_CONTENT=$(cat "$SKIP_FILE" | tr -d '[:space:]')
             if [ "$SKIP_CONTENT" = "SKIP_CLAUDE_CI_APPROVED" ]; then
               echo "skip=true" >> $GITHUB_OUTPUT
-              echo "⏭️ Valid .skip file found (content verified) - Claude CI/CD will be skipped"
+              echo "Valid .skip file found (content verified) - Claude CI/CD will be skipped"
             else
               echo "skip=false" >> $GITHUB_OUTPUT
-              echo "⚠️ .skip file found but invalid content - proceeding with Claude CI/CD for security"
-              echo "💡 Hint: .skip file must contain exactly 'SKIP_CLAUDE_CI_APPROVED' or set SKIP_FILE_HASH secret"
+              echo "WARNING: .skip file found but invalid content - proceeding with Claude CI/CD for security"
+              echo "Hint: .skip file must contain exactly 'SKIP_CLAUDE_CI_APPROVED' or set SKIP_FILE_HASH secret"
+              echo "See .github/skips/SKIP_SYSTEM.md for details"
             fi
           fi
 
