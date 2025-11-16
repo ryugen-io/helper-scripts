@@ -642,6 +642,14 @@ readonly DOCKERFILE_PATH="./Dockerfile"             User's Dockerfile path
    - Never manually edit files in `.github/workflows/logs/`
    - Logs are auto-generated and auto-committed
 
+4. **CRITICAL: Pull-Commit-Push Workflow**:
+   - **ALWAYS** pull before making changes: `git pull --rebase`
+   - Make changes and commit
+   - Push to remote: `git push`
+   - **REPEAT** this cycle for every change
+   - **NEVER** skip pulling before commits (README.md and workflow logs are auto-generated)
+   - Workflow: `pull → commit → push → pull → commit → push`
+
 ### Environment Variables
 
 - **Environment config**: Store in `.sys/env/.env` (gitignored)
