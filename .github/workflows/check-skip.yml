@@ -23,23 +23,15 @@ jobs:
         env:
           EXPECTED_SKIP_HASH: ${{ secrets.SKIP_FILE_HASH }}
         run: |
-          # Catppuccin Mocha color palette
-          GREEN='\033[38;2;166;227;161m'
-          YELLOW='\033[38;2;249;226;175m'
-          BLUE='\033[38;2;137;180;250m'
-          SAPPHIRE='\033[38;2;116;199;236m'
-          NC='\033[0m'
-
           # Nerd Font Icons
-          CHECK=""
-          WARN=""
-          INFO=""
-
+          CHECK=""
+          WARN=""
+          INFO=""
           SKIP_FILE=".github/skips/.skip"
 
           if [ ! -f "$SKIP_FILE" ]; then
             echo "skip=false" >> $GITHUB_OUTPUT
-            echo -e "${GREEN}${CHECK}${NC}  No skip file - proceeding with CI/CD"
+            echo -e "${CHECK}  No skip file - proceeding with CI/CD"
             exit 0
           fi
 
@@ -48,19 +40,19 @@ jobs:
           if [ -n "$EXPECTED_SKIP_HASH" ]; then
             if [ "$SKIP_FILE_HASH" = "$EXPECTED_SKIP_HASH" ]; then
               echo "skip=true" >> $GITHUB_OUTPUT
-              echo -e "${SAPPHIRE}${CHECK}${NC}  Skip file verified (hash) - skipping CI/CD"
+              echo -e "${CHECK}  Skip file verified (hash) - skipping CI/CD"
             else
               echo "skip=false" >> $GITHUB_OUTPUT
-              echo -e "${YELLOW}${WARN}${NC}  Skip file hash mismatch - proceeding for security"
+              echo -e "${WARN}  Skip file hash mismatch - proceeding for security"
             fi
           else
             SKIP_CONTENT=$(cat "$SKIP_FILE" | tr -d '[:space:]')
             if [ "$SKIP_CONTENT" = "SKIP_CLAUDE_CI_APPROVED" ]; then
               echo "skip=true" >> $GITHUB_OUTPUT
-              echo -e "${SAPPHIRE}${CHECK}${NC}  Skip file verified (content) - skipping CI/CD"
+              echo -e "${CHECK}  Skip file verified (content) - skipping CI/CD"
             else
               echo "skip=false" >> $GITHUB_OUTPUT
-              echo -e "${YELLOW}${WARN}${NC}  Skip file invalid - proceeding for security"
-              echo -e "${BLUE}${INFO}${NC}  See .github/skips/SKIP_SYSTEM.md for setup"
+              echo -e "${WARN}  Skip file invalid - proceeding for security"
+              echo -e "${INFO}  See .github/skips/SKIP_SYSTEM.md for setup"
             fi
           fi

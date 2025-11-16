@@ -85,10 +85,18 @@ def fix_icons_in_file(filepath: Path, dry_run: bool = False) -> bool:
         # We'll replace the empty string with the actual icon
         for icon_name, icon_char in NERD_FONTS.items():
             # Match patterns like: readonly CHECK=""
-            pattern = rf'(readonly\s+{icon_name}=)""\s*$'
+            # Pattern 1: With readonly (shell scripts)
+            pattern1 = rf'(readonly\s+{icon_name}=)""\s*$'
+            # Pattern 2: Without readonly (YAML, other formats)
+            pattern2 = rf'({icon_name}=)""\s*$'
             replacement = rf'\1"{icon_char}"'
 
-            new_content = re.sub(pattern, replacement, content, flags=re.MULTILINE)
+            # Try pattern 1 first (with readonly)
+            new_content = re.sub(pattern1, replacement, content, flags=re.MULTILINE)
+
+            # If no changes, try pattern 2 (without readonly)
+            if new_content == content:
+                new_content = re.sub(pattern2, replacement, content, flags=re.MULTILINE)
 
             if new_content != content:
                 changes_made = True
