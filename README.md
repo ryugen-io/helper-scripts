@@ -1,121 +1,65 @@
-# Docker Helper Scripts Templates
+# Helper Scripts
 
-Collection of standardized shell scripts for Docker container management.
+Collection of helper scripts for Docker container management, development, and utilities.
 
 ## Features
 
 - Catppuccin Mocha color scheme
 - Nerd Font icons
-- Consistent error handling with `set -e` and `set -o pipefail`
+- Consistent error handling
 - Modular and reusable
+- Clean, minimal design
+
+## Quick Start
+
+Use the installation script to deploy scripts to your project:
+
+```bash
+./install.sh
+```
+
+The script will:
+- Ask for your project directory
+- Let you select which scripts to install
+- Automatically customize variables (container name, image name, etc.)
+- Make scripts executable
 
 ## Scripts
 
-### Container Management
+### Core
 
-- **start.sh** - Start a Docker container
-- **stop.sh** - Stop a Docker container
-- **status.sh** - Show detailed container status (health, uptime, CPU, memory, ports)
+- **install.sh** - Interactive installation script for deploying scripts to projects
+- **theme.sh** - Centralized Catppuccin Mocha colors and Nerd Font icons (source in scripts)
+
+### Docker Container Management
+
 - **logs.sh** - Check container logs for errors and warnings
 - **rebuild.sh** - Rebuild container image and recreate container
+- **start.sh** - Start a Docker container
+- **status.sh** - Show detailed container status (health, uptime, CPU, memory, ports)
+- **stop.sh** - Stop a Docker container
 
 ### Development Tools
 
-- **lines.sh** - Count lines of code in Rust files with detailed statistics
+- **check_style.sh** - Validate coding guidelines and theming consistency
+- **format.sh** - Format shell scripts using shfmt (like cargo fmt)
+- **lines.sh** - Count lines of code with detailed statistics
 - **lint.sh** - Lint shell scripts for common issues
-
-### Deployment
-
-- **deploy.sh** - Interactive deployment script to copy and customize templates
 
 ### Utilities
 
 - **fix_nerdfonts.py** - Fix Nerd Font icon encoding issues in shell scripts
-
-## Quick Start
-
-### Interactive Deployment (Recommended)
-
-Use the interactive deployment script to automatically copy and customize scripts:
-
-```bash
-./deploy.sh
-```
-
-The script will ask you for:
-- Target directory
-- Container name
-- Docker image name
-- Display name for output
-- Path to Dockerfile
-- Which scripts to deploy
-
-It automatically replaces all `# CUSTOMIZE THIS` variables and makes scripts executable.
-
-### Manual Deployment
-
-1. Copy the template scripts to your project directory
-2. Customize the following variables in each script:
-   - `CONTAINER_NAME` - Your container name
-   - `IMAGE_NAME` - Your Docker image name (rebuild.sh)
-   - `DISPLAY_NAME` - Display name for status output (status.sh)
-   - `DOCKERFILE_PATH` - Path to Dockerfile (rebuild.sh)
-3. Make scripts executable: `chmod +x *.sh`
-4. Run the scripts: `./start.sh`, `./status.sh`, etc.
+- **remove_emojis.sh** - Remove all emojis and Unicode symbols from files
+- **update_readme.py** - Dynamically generate README.md based on repository contents
 
 ## Customization
 
-### rebuild.sh
+All scripts use:
+- **Catppuccin Mocha** color palette for consistent theming
+- **Nerd Font** icons (requires a Nerd Font to display correctly)
+- **Set -e and -o pipefail** for proper error handling
 
-Add your `docker run` command in the rebuild.sh script:
-
-```bash
-docker run -d \
-    --name "${CONTAINER_NAME}" \
-    -p 8080:8080 \
-    --restart unless-stopped \
-    "${IMAGE_NAME}"
-```
-
-### logs.sh
-
-By default, checks last 100 lines. Pass a number to check more:
-
-```bash
-./logs.sh 500  # Check last 500 lines
-```
-
-### lines.sh
-
-By default, uses 200 line limit. Pass a number to change:
-
-```bash
-./lines.sh 150  # Set warning threshold to 150 lines
-```
-
-## Color Scheme
-
-Uses Catppuccin Mocha palette:
-- Red: Errors
-- Yellow: Warnings
-- Blue: Info
-- Green: Success
-- Mauve: Headers
-- Sapphire: Highlights
-
-## Icons
-
-Requires a Nerd Font to display icons correctly. Icons used:
-- ✓ Check
-- ✗ Cross
-- ⚠ Warning
-- ℹ Info
--  Docker
--  Server
--  Clock
--  Memory
--  CPU
--  Network
+See `THEMING.md` for detailed theming information.
 
 ## License
 

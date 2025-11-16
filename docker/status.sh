@@ -4,15 +4,15 @@ set -e
 set -o pipefail
 
 # Catppuccin Mocha color palette (24-bit true color)
-readonly RED='\033[38;2;243;139;168m'        # #f38ba8 - Errors
-readonly GREEN='\033[38;2;166;227;161m'      # #a6e3a1 - Success/Info
-readonly YELLOW='\033[38;2;249;226;175m'     # #f9e2af - Warnings
-readonly BLUE='\033[38;2;137;180;250m'       # #89b4fa - Info highlights
-readonly MAUVE='\033[38;2;203;166;247m'      # #cba6f7 - Headers
-readonly SAPPHIRE='\033[38;2;116;199;236m'   # #74c7ec - Success highlights
-readonly TEXT='\033[38;2;205;214;244m'       # #cdd6f4 - Normal text
-readonly SUBTEXT='\033[38;2;186;194;222m'    # #bac2de - Subtext
-readonly NC='\033[0m'                         # No Color
+readonly RED='\033[38;2;243;139;168m'      # #f38ba8 - Errors
+readonly GREEN='\033[38;2;166;227;161m'    # #a6e3a1 - Success/Info
+readonly YELLOW='\033[38;2;249;226;175m'   # #f9e2af - Warnings
+readonly BLUE='\033[38;2;137;180;250m'     # #89b4fa - Info highlights
+readonly MAUVE='\033[38;2;203;166;247m'    # #cba6f7 - Headers
+readonly SAPPHIRE='\033[38;2;116;199;236m' # #74c7ec - Success highlights
+readonly TEXT='\033[38;2;205;214;244m'     # #cdd6f4 - Normal text
+readonly SUBTEXT='\033[38;2;186;194;222m'  # #bac2de - Subtext
+readonly NC='\033[0m'                      # No Color
 
 # Nerd Font Icons
 readonly CHECK=""
@@ -70,8 +70,8 @@ show_container_status() {
     fi
 
     # Get container status
-    local status=$(docker inspect --format='{{.State.Status}}' "$container" 2>/dev/null || echo "unknown")
-    local health=$(docker inspect --format='{{.State.Health.Status}}' "$container" 2>/dev/null || echo "none")
+    local status=$(docker inspect --format='{{.State.Status}}' "$container" 2> /dev/null || echo "unknown")
+    local health=$(docker inspect --format='{{.State.Health.Status}}' "$container" 2> /dev/null || echo "none")
 
     # Status
     if [ "$status" = "running" ]; then
@@ -94,9 +94,9 @@ show_container_status() {
     # Only show stats if running
     if [ "$status" = "running" ]; then
         # Uptime
-        local started=$(docker inspect --format='{{.State.StartedAt}}' "$container" 2>/dev/null)
+        local started=$(docker inspect --format='{{.State.StartedAt}}' "$container" 2> /dev/null)
         if [ -n "$started" ]; then
-            local uptime=$(docker inspect --format='{{.State.StartedAt}}' "$container" 2>/dev/null | xargs -I {} date -d {} +%s 2>/dev/null || echo "0")
+            local uptime=$(docker inspect --format='{{.State.StartedAt}}' "$container" 2> /dev/null | xargs -I {} date -d {} +%s 2> /dev/null || echo "0")
             local now=$(date +%s)
             local diff=$((now - uptime))
             local days=$((diff / 86400))
@@ -113,7 +113,7 @@ show_container_status() {
         fi
 
         # Get stats
-        local stats=$(docker stats --no-stream --format "{{.MemUsage}}|{{.CPUPerc}}" "$container" 2>/dev/null)
+        local stats=$(docker stats --no-stream --format "{{.MemUsage}}|{{.CPUPerc}}" "$container" 2> /dev/null)
         if [ -n "$stats" ]; then
             local mem=$(echo "$stats" | cut -d'|' -f1)
             local cpu=$(echo "$stats" | cut -d'|' -f2)
@@ -123,7 +123,7 @@ show_container_status() {
         fi
 
         # Ports
-        local ports=$(docker port "$container" 2>/dev/null | sed 's/^/                    /' | sed 's/0.0.0.0://' || echo "none")
+        local ports=$(docker port "$container" 2> /dev/null | sed 's/^/                    /' | sed 's/0.0.0.0://' || echo "none")
         if [ "$ports" != "none" ]; then
             echo -e "${SUBTEXT}${NET}  Ports:${NC}"
             echo -e "${SAPPHIRE}${ports}${NC}"
