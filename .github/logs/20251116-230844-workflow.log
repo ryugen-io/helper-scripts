@@ -1,0 +1,50 @@
+[2025-11-16 23:08:44] [lines] Analyzing changed files...
+[2025-11-16 23:08:44] [info]   .github/skips/generate_skip_hash.py        138 lines (104 code, 7 comments, 27 blank)
+[2025-11-16 23:08:44] [info]   .github/workflows/check-skip.yml           163 lines (136 code, 11 comments, 16 blank)
+[2025-11-16 23:08:44] [info]   .github/workflows/claude-code-review.yml   161 lines (114 code, 18 comments, 29 blank)
+[2025-11-16 23:08:44] [info]   .github/workflows/claude.yml               163 lines (126 code, 10 comments, 27 blank)
+[2025-11-16 23:08:44] [info]   .github/workflows/scripts/ci-lines.sh      137 lines (87 code, 23 comments, 27 blank)
+[2025-11-16 23:08:44] [info]   .github/workflows/scripts/ci-logger.sh      76 lines (54 code, 11 comments, 11 blank)
+[2025-11-16 23:08:44] [info]   .github/workflows/scripts/update_readme.py   103 lines (74 code, 9 comments, 20 blank)
+[2025-11-16 23:08:44] [info]   .github/workflows/update-readme.yml        172 lines (136 code, 5 comments, 31 blank)
+[2025-11-16 23:08:44] [info]   .sys/theme/theme.py                         76 lines (57 code, 2 comments, 17 blank)
+[2025-11-16 23:08:44] [info]   .sys/theme/theme.sh                         56 lines (39 code, 9 comments, 8 blank)
+[2025-11-16 23:08:44] [info]   dev/check_style.py                         300 lines (218 code, 21 comments, 61 blank)
+[2025-11-16 23:08:44] [info]   dev/format.py                              272 lines (200 code, 20 comments, 52 blank)
+[2025-11-16 23:08:44] [info]   dev/lines.py                               278 lines (196 code, 24 comments, 58 blank)
+[2025-11-16 23:08:44] [info]   dev/lint.py                                237 lines (168 code, 18 comments, 51 blank)
+[2025-11-16 23:08:44] [info]   dev/pyclean.py                             203 lines (149 code, 11 comments, 43 blank)
+[2025-11-16 23:08:44] [info]   dev/pycompile.py                           199 lines (146 code, 11 comments, 42 blank)
+[2025-11-16 23:08:44] [info]   dev/pylint.py                              311 lines (236 code, 16 comments, 59 blank)
+[2025-11-16 23:08:44] [info]   dev/shellcheck.py                          217 lines (164 code, 15 comments, 38 blank)
+[2025-11-16 23:08:44] [info]   dev/test.py                                175 lines (134 code, 11 comments, 30 blank)
+[2025-11-16 23:08:44] [info]   dev/venv.py                                248 lines (178 code, 19 comments, 51 blank)
+[2025-11-16 23:08:44] [info]   docker/logs.py                             139 lines (112 code, 1 comments, 26 blank)
+[2025-11-16 23:08:44] [info]   docker/rebuild.py                          137 lines (112 code, 1 comments, 24 blank)
+[2025-11-16 23:08:44] [info]   docker/start.py                            125 lines (102 code, 1 comments, 22 blank)
+[2025-11-16 23:08:44] [info]   docker/status.py                           222 lines (183 code, 1 comments, 38 blank)
+[2025-11-16 23:08:44] [info]   docker/stop.py                              99 lines (79 code, 1 comments, 19 blank)
+[2025-11-16 23:08:44] [info]   install.py                                 364 lines (285 code, 1 comments, 78 blank)
+[2025-11-16 23:08:44] [info]   rust/audit.py                              275 lines (215 code, 5 comments, 55 blank)
+[2025-11-16 23:08:44] [info]   rust/check.py                              231 lines (175 code, 5 comments, 51 blank)
+[2025-11-16 23:08:44] [info]   rust/clean.py                              255 lines (195 code, 5 comments, 55 blank)
+[2025-11-16 23:08:44] [info]   rust/clippy.py                             252 lines (193 code, 5 comments, 54 blank)
+[2025-11-16 23:08:44] [info]   rust/rustfmt.py                            267 lines (206 code, 6 comments, 55 blank)
+[2025-11-16 23:08:44] [info]   rust/test_rust.py                          245 lines (186 code, 6 comments, 53 blank)
+[2025-11-16 23:08:44] [info]   temp.sh                                      7 lines (1 code, 5 comments, 1 blank)
+[2025-11-16 23:08:44] [info]   utils/fix_nerdfonts.py                     332 lines (235 code, 38 comments, 59 blank)
+[2025-11-16 23:08:44] [info]   utils/remove_emojis.py                     302 lines (207 code, 36 comments, 59 blank)
+[2025-11-16 23:08:44] [info]   utils/update_readme.py                     103 lines (74 code, 9 comments, 20 blank)
+[2025-11-16 23:08:44] [summary] Line Count Summary
+[2025-11-16 23:08:44] [info]   Files analyzed:      36
+[2025-11-16 23:08:44] [info]   Code lines:        5276
+[2025-11-16 23:08:44] [info]   Comment lines:      397
+[2025-11-16 23:08:44] [info]   Blank lines:       1367
+[2025-11-16 23:08:44] [info]   Total lines:       7040
+[2025-11-16 23:08:44] [info]   Average/file:       146 lines
+[2025-11-16 23:08:44] [success]   Line count analysis complete!
+[2025-11-16 23:08:44] [commit] Committing changes...
+[2025-11-16 23:08:44] [success]   Changes committed
+[2025-11-16 23:08:44] [push]   Pushing to remote...
+[2025-11-16 23:08:45] [success]   Changes pushed successfully
+[2025-11-16 23:08:45] [workflow]   README update complete!
