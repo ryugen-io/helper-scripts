@@ -67,10 +67,10 @@ helper-scripts/
 │ └── THEMING.md # Theming guide
 │
 ├── dev/ # Development tools
-│ ├── check_style.sh # Style checker
-│ ├── format.sh # Code formatter
-│ ├── lines.sh # Line counter (Rust-focused)
-│ ├── lint.sh # Shell script linter
+│ ├── check_style.py # Style checker
+│ ├── format.py # Code formatter
+│ ├── lines.py # Line counter (Rust-focused)
+│ ├── lint.py # Shell script linter
 │ ├── pycompile.py # Python compilation checker
 │ ├── pyclean.py # Python cache cleaner
 │ ├── shellcheck.py # Python-based shellcheck wrapper
@@ -79,19 +79,18 @@ helper-scripts/
 │ └── venv.py # Python venv creator
 │
 ├── docker/ # Docker container management
-│ ├── start.sh # Start container
-│ ├── stop.sh # Stop container
-│ ├── status.sh # Show container status & stats
-│ ├── logs.sh # Check logs for errors/warnings
-│ └── rebuild.sh # Rebuild image & recreate container
+│ ├── logs.py # Check logs for errors/warnings
+│ ├── rebuild.py # Rebuild image & recreate container
+│ ├── start.py # Start container
+│ ├── status.py # Show container status & stats
+│ └── stop.py # Stop container
 │
 ├── utils/ # Utility scripts
 │ ├── fix_nerdfonts.py # Fix Nerd Font icon encoding
 │ ├── remove_emojis.py # Remove emojis from files
-│ ├── remove_emojis.sh # Shell wrapper for emoji removal
 │ └── update_readme.py # Auto-generate README
 │
-├── install.sh # Interactive installation script
+├── install.py # Interactive installation script
 ├── README.md # User-facing documentation
 ├── claude.md # Generated file concatenation (lowercase)
 └── CLAUDE.md # This file - AI assistant guide
@@ -377,11 +376,11 @@ Location: `docker/`
 
 All Docker scripts follow a template pattern with customizable variables:
 - `CONTAINER_NAME` - Docker container name
-- `IMAGE_NAME` - Docker image name (used in rebuild.sh)
-- `DISPLAY_NAME` - Human-readable service name (used in status.sh)
-- `DOCKERFILE_PATH` - Path to Dockerfile (used in rebuild.sh)
+- `IMAGE_NAME` - Docker image name (used in rebuild.py)
+- `DISPLAY_NAME` - Human-readable service name (used in status.py)
+- `DOCKERFILE_PATH` - Path to Dockerfile (used in rebuild.py)
 
-### start.sh
+### start.py
 Starts a Docker container.
 
 **Features:**
@@ -389,7 +388,7 @@ Starts a Docker container.
 - Detects if already running
 - Provides status check commands
 
-### stop.sh
+### stop.py
 Stops a running Docker container.
 
 **Features:**
@@ -397,7 +396,7 @@ Stops a running Docker container.
 - Confirms successful stop
 - Safe idempotent operation
 
-### status.sh
+### status.py
 Shows detailed container status and statistics.
 
 **Displays:**
@@ -408,7 +407,7 @@ Shows detailed container status and statistics.
 - CPU usage
 - Port mappings
 
-### logs.sh
+### logs.py
 Checks container logs for errors and warnings.
 
 **Features:**
@@ -419,11 +418,11 @@ Checks container logs for errors and warnings.
 
 **Usage:**
 ```bash
-./docker/logs.sh # Check last 100 lines
-./docker/logs.sh 500 # Check last 500 lines
+./docker/logs.py # Check last 100 lines
+./docker/logs.py 500 # Check last 500 lines
 ```
 
-### rebuild.sh
+### rebuild.py
 Rebuilds Docker image and recreates container.
 
 **Process:**
@@ -453,7 +452,7 @@ readonly CHECK=""
 readonly CHECK=""  # \uf00c
 ```
 
-### remove_emojis.py & remove_emojis.sh
+### remove_emojis.py
 Removes emoji characters from text files.
 
 ### update_readme.py
@@ -632,7 +631,7 @@ git push
 
 ## Installation System
 
-**Script:** `install.sh`
+**Script:** `install.py`
 
 Interactive script for deploying helper scripts to other projects.
 
@@ -672,7 +671,7 @@ readonly DOCKERFILE_PATH="./Dockerfile"             User's Dockerfile path
 ### Usage
 
 ```bash
-./install.sh
+./install.py
 ```
 
 ---
@@ -879,11 +878,11 @@ cp /path/to/file /path/to/repo/.backups/file.backup-$(date +%Y%m%d-%H%M%S)
 ./install.py                          # Interactive installation
 
 # Docker operations (after deployment with install.py)
-./docker/start.sh                     # Start container
-./docker/stop.sh                      # Stop container
-./docker/status.sh                    # Show status
-./docker/logs.sh [lines]              # Check logs
-./docker/rebuild.sh                   # Rebuild image
+./docker/start.py                     # Start container
+./docker/stop.py                      # Stop container
+./docker/status.py                    # Show status
+./docker/logs.py [lines]              # Check logs
+./docker/rebuild.py                   # Rebuild image
 ```
 
 ### Important Files
@@ -892,7 +891,7 @@ cp /path/to/file /path/to/repo/.backups/file.backup-$(date +%Y%m%d-%H%M%S)
 - **Theme Documentation**: `.sys/THEMING.md`
 - **Skip System**: `.github/skips/SKIP_SYSTEM.md`
 - **Main Workflow**: `.github/workflows/claude.yml`
-- **Installation Script**: `install.sh`
+- **Installation Script**: `install.py`
 
 ### Key Patterns
 
@@ -913,7 +912,7 @@ echo -e "${MAUVE}[tag]${NC} ${ICON}  Action..."
 
 **Customizable variable:**
 ```bash
-readonly CONTAINER_NAME="your-container-name"  # Replaced by install.sh
+readonly CONTAINER_NAME="your-container-name"  # Replaced by install.py
 ```
 
 ---
@@ -937,7 +936,7 @@ When contributing to this repository:
 1. Follow existing conventions and patterns
 2. Use the centralized theming system
 3. Add appropriate documentation
-4. Test scripts with `./dev/lint.sh`
+4. Test scripts with `./dev/lint.py`
 5. Update CLAUDE.md if adding new features/conventions
 
 For questions about Claude AI integration:
