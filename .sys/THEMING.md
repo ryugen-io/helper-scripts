@@ -1,8 +1,8 @@
 # Theming Guide
 
-Standardisiertes Theming für alle Helper Scripts mit Catppuccin Mocha Farbpalette und Nerd Font Icons.
+Standardized theming for all Helper Scripts with Catppuccin Mocha color palette and Nerd Font icons.
 
-## Catppuccin Mocha Farbpalette (24-bit True Color)
+## Catppuccin Mocha Color Palette (24-bit True Color)
 
 ```bash
 # Catppuccin Mocha color palette (24-bit true color)
@@ -17,30 +17,30 @@ readonly SUBTEXT='\033[38;2;186;194;222m'    # #bac2de - Subtext
 readonly NC='\033[0m'                         # No Color
 ```
 
-## Farbverwendung
+## Color Usage
 
-- **RED** (`#f38ba8`) - Fehler und kritische Meldungen
-- **GREEN** (`#a6e3a1`) - Erfolg und positive Meldungen
-- **YELLOW** (`#f9e2af`) - Warnungen
-- **BLUE** (`#89b4fa`) - Informationen und Highlights
-- **MAUVE** (`#cba6f7`) - Headers und Tags
-- **SAPPHIRE** (`#74c7ec`) - Erfolgs-Highlights
-- **TEXT** (`#cdd6f4`) - Normaler Text
-- **SUBTEXT** (`#bac2de`) - Sekundärer Text
+- **RED** (`#f38ba8`) - Errors and critical messages
+- **GREEN** (`#a6e3a1`) - Success and positive messages
+- **YELLOW** (`#f9e2af`) - Warnings
+- **BLUE** (`#89b4fa`) - Information and highlights
+- **MAUVE** (`#cba6f7`) - Headers and tags
+- **SAPPHIRE** (`#74c7ec`) - Success highlights
+- **TEXT** (`#cdd6f4`) - Normal text
+- **SUBTEXT** (`#bac2de`) - Secondary text
 
 ## Nerd Font Icons
 
 ```bash
 # Nerd Font Icons
-readonly CHECK=""      # \uf00c - Erfolg
-readonly CROSS=""      # \uf00d - Fehler
-readonly WARN=""       # \uf071 - Warnung
+readonly CHECK=""      # \uf00c - Success
+readonly CROSS=""      # \uf00d - Error
+readonly WARN=""       # \uf071 - Warning
 readonly INFO=""       # \uf05a - Information
 readonly SERVER=""     # \uf233 - Server
 readonly DOCKER=""     # \uf308 - Docker
 readonly CONTAINER=""  # \uf1b2 - Container
-readonly CHART="󰈙"      # \uf200 - Chart/Statistik
-readonly CLOCK="󰥔"      # \uf64f - Zeit/Uptime
+readonly CHART="󰈙"      # \uf200 - Chart/Statistics
+readonly CLOCK="󰥔"      # \uf64f - Time/Uptime
 readonly MEM="󰍛"        # \uf538 - Memory
 readonly CPU="󰻠"        # \uf2db - CPU
 readonly NET="󰈀"        # \uf6ff - Network
@@ -58,7 +58,7 @@ readonly SEARCH=""     # \uf002 - Search
 readonly HAMMER=""     # \uf6e3 - Build/Rebuild
 ```
 
-## Standard Log-Funktionen
+## Standard Log Functions
 
 ```bash
 log_success() {
@@ -81,17 +81,17 @@ log_info() {
 ## Header/Tag Format
 
 ```bash
-echo -e "${MAUVE}[script-name]${NC} ${ICON}  Beschreibung..."
+echo -e "${MAUVE}[script-name]${NC} ${ICON}  Description..."
 ```
 
-**Beispiele:**
+**Examples:**
 ```bash
 echo -e "${MAUVE}[start]${NC} ${DOCKER}  Starting container..."
 echo -e "${MAUVE}[status]${NC} ${SERVER}  Checking status..."
 echo -e "${MAUVE}[logs]${NC} ${LOG}  Checking logs..."
 ```
 
-## Verwendung in Python Scripts
+## Usage in Python Scripts
 
 ```python
 # Catppuccin Mocha color palette (24-bit true color)
@@ -127,24 +127,24 @@ def log_info(msg: str):
 
 ## Output Design Guidelines
 
-**WICHTIG: Halte Output CLEAN und SIMPEL**
+**IMPORTANT: Keep output CLEAN and SIMPLE**
 
-### Was NICHT zu tun ist
+### What NOT to do
 
-- **KEINE Separator-Linien** wie `==================== Title ====================`
-- **KEINE Unicode Emojis** (wie „", „", „") - nur Nerd Font Icons!
-- **KEINE übermäßigen Leerzeilen** oder Whitespace
-- **KEINE verbose Erklärungen** - kurz und präzise
+- **NO separator lines** like `==================== Title ====================`
+- **NO Unicode Emojis** (like "", "", "") - only Nerd Font Icons!
+- **NO excessive blank lines** or whitespace
+- **NO verbose explanations** - keep it short and precise
 
-### Korrekte Output-Formatierung
+### Correct Output Formatting
 
 ```bash
-# Gut - Clean und simpel
+# Good - Clean and simple
 echo -e "${GREEN}${CHECK}${NC}  No skip file - proceeding with CI/CD"
 echo -e "${BLUE}${INFO}${NC}  Checking configuration..."
 echo -e "${YELLOW}${WARN}${NC}  Skip file invalid - proceeding for security"
 
-# Schlecht - Übertrieben und verbose
+# Bad - Excessive and verbose
 echo -e "${MAUVE}==================== Title ====================${NC}"
 echo ""
 echo -e "${BLUE}${INFO}${NC}  Detailed explanation of what we're doing..."
@@ -153,34 +153,34 @@ echo ""
 echo -e "${MAUVE}=================================================${NC}"
 ```
 
-### Format-Regel
+### Format Rule
 
-Alle Ausgaben folgen dem Format:
+All output follows the format:
 ```
 <COLOR><ICON><NC>  <Message>
 ```
 
-- Ein Icon
-- Zwei Leerzeichen nach dem Icon
-- Kurze, aussagekräftige Nachricht
-- Keine Punkt am Ende bei Einzeilern
-- Keine zusätzlichen Dekorationen
+- One icon
+- Two spaces after the icon
+- Short, meaningful message
+- No period at the end for single-liners
+- No additional decorations
 
 ## Best Practices
 
-1. **Konsistenz**: Verwende immer die gleichen Farben für die gleichen Zwecke
-2. **Icons**: Wähle passende Icons für den Kontext
-3. **Error Handling**: Fehler immer nach stderr (`>&2`)
-4. **Reset**: Verwende immer `${NC}` am Ende von farbigen Texten
-5. **Headers**: Format `[script-name]` in MAUVE für alle Scripts
-6. **Clean Output**: Keine separator Linien, keine Emojis, keine verbose Texte
+1. **Consistency**: Always use the same colors for the same purposes
+2. **Icons**: Choose appropriate icons for the context
+3. **Error Handling**: Always send errors to stderr (`>&2`)
+4. **Reset**: Always use `${NC}` at the end of colored text
+5. **Headers**: Use format `[script-name]` in MAUVE for all scripts
+6. **Clean Output**: No separator lines, no emojis, no verbose text
 
 ## Terminal Requirements
 
-- Terminal mit 24-bit True Color Support
-- Nerd Font installiert (z.B. JetBrains Mono Nerd Font, Fira Code Nerd Font)
+- Terminal with 24-bit True Color support
+- Nerd Font installed (e.g. JetBrains Mono Nerd Font, Fira Code Nerd Font)
 
-## Beispiel Script
+## Example Script
 
 ```bash
 #!/bin/bash
@@ -232,7 +232,7 @@ main() {
 main "$@"
 ```
 
-## Referenzen
+## References
 
 - [Catppuccin Mocha Theme](https://github.com/catppuccin/catppuccin)
 - [Nerd Fonts](https://www.nerdfonts.com/)
