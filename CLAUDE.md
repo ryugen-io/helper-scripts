@@ -71,9 +71,12 @@ helper-scripts/
 │ ├── format.sh # Code formatter
 │ ├── lines.sh # Line counter (Rust-focused)
 │ ├── lint.sh # Shell script linter
+│ ├── pycompile.py # Python compilation checker
+│ ├── pyclean.py # Python cache cleaner
 │ ├── shellcheck.py # Python-based shellcheck wrapper
 │ ├── test.py # Test runner (Python)
-│ └── test.bats # BATS test suite
+│ ├── test.bats # BATS test suite
+│ └── venv.py # Python venv creator
 │
 ├── docker/ # Docker container management
 │ ├── start.sh # Start container
@@ -280,6 +283,23 @@ Python cache cleaner - removes `__pycache__` and `.mypy_cache` directories.
 ./dev/pyclean.py                      # Clean current directory
 ./dev/pyclean.py --dry-run            # Preview what would be removed
 ./dev/pyclean.py --path /path/to/dir  # Clean specific directory
+```
+
+### venv.py
+Python virtual environment creator - creates and configures Python venvs.
+
+**Features:**
+- Interactive venv name selection
+- Creates venv in specified directory
+- Shows activation instructions for current shell (fish, bash, zsh)
+- Non-interactive mode with defaults
+
+**Usage:**
+```bash
+./dev/venv.py                         # Create .venv interactively
+./dev/venv.py --name myenv            # Create venv with specific name
+./dev/venv.py --path /path/to/dir     # Create in specific directory
+./dev/venv.py --no-interactive        # Use defaults without prompting
 ```
 
 ### shellcheck.py
