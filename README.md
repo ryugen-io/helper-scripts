@@ -1,5 +1,6 @@
 # Helper Scripts
 
+- [.github/skips/.skip](.github/skips/.skip)
 - [.github/skips/.skip.example](.github/skips/.skip.example)
 - [.github/skips/SKIP_SYSTEM.md](.github/skips/SKIP_SYSTEM.md)
 - [.sys/THEMING.md](.sys/THEMING.md)
@@ -16,5 +17,6 @@
 - [docker/stop.sh](docker/stop.sh)
 - [install.sh](install.sh)
 - [utils/fix_nerdfonts.py](utils/fix_nerdfonts.py)
+- [utils/remove_emojis.py](utils/remove_emojis.py)
 - [utils/remove_emojis.sh](utils/remove_emojis.sh)
 - [utils/update_readme.py](utils/update_readme.py)
