@@ -65,12 +65,69 @@ def log_info(msg: str):
     """Log info message with icon"""
     print(f"{Colors.BLUE}{INFO}  {Colors.NC}{msg}")
 
-def fix_icons_in_file(filepath: Path, dry_run: bool = False) -> bool:
+def get_patterns_for_filetype(filepath: Path, icon_name: str) -> list:
     """
-    Fix Nerd Font icons in a shell script file
+    Get appropriate regex patterns based on file extension
 
     Args:
-        filepath: Path to the shell script
+        filepath: Path to the file
+        icon_name: Name of the icon (e.g., 'CHECK', 'WARN')
+
+    Returns:
+        List of (pattern, description) tuples to try in order
+    """
+    suffix = filepath.suffix.lower()
+    patterns = []
+
+    if suffix == '.sh':
+        # Shell scripts: readonly ICON=""
+        patterns.append((
+            rf'(readonly\s+{icon_name}=)""\s*$',
+            'shell readonly'
+        ))
+    elif suffix in ['.yml', '.yaml']:
+        # YAML files: ICON="" (no readonly, used in GitHub Actions)
+        patterns.append((
+            rf'(\s+{icon_name}=)""\s*$',
+            'yaml assignment'
+        ))
+    elif suffix == '.py':
+        # Python: ICON = "" (with spaces around =)
+        patterns.append((
+            rf'({icon_name}\s*=\s*)""\s*$',
+            'python assignment'
+        ))
+    elif suffix == '.md':
+        # Markdown: Could have various patterns
+        # - Code blocks with readonly ICON=""
+        # - Inline code `ICON=""`
+        patterns.append((
+            rf'(readonly\s+{icon_name}=)""\s*$',
+            'markdown shell code'
+        ))
+        patterns.append((
+            rf'(`{icon_name}=)""`',
+            'markdown inline code'
+        ))
+    else:
+        # Generic: try common patterns
+        patterns.append((
+            rf'(readonly\s+{icon_name}=)""\s*$',
+            'generic readonly'
+        ))
+        patterns.append((
+            rf'({icon_name}=)""\s*$',
+            'generic assignment'
+        ))
+
+    return patterns
+
+def fix_icons_in_file(filepath: Path, dry_run: bool = False) -> bool:
+    """
+    Fix Nerd Font icons in a file based on file type
+
+    Args:
+        filepath: Path to the file
         dry_run: If True, only show what would be changed
 
     Returns:
