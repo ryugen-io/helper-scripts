@@ -13,6 +13,7 @@ Thumbs.db
 *.tmp
 *.bak
 *.backup*
+.backups/
 
 # Environment configuration (use .sys/env/.env.example as template)
 .sys/env/.env

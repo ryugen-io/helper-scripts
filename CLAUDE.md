@@ -45,6 +45,7 @@ This repository provides a collection of standardized, reusable shell scripts fo
 
 ```
 helper-scripts/
+├── .backups/ # Timestamped backups of edited files
 ├── .github/ # GitHub Actions and workflows
 │ ├── workflows/ # Workflow definitions
 │ │ ├── claude.yml # Claude AI integration (issue/PR comments)
@@ -596,6 +597,31 @@ readonly DOCKERFILE_PATH="./Dockerfile"             User's Dockerfile path
 ---
 
 ## Best Practices for AI Assistants
+
+### File Backup Policy
+
+**CRITICAL: Before editing ANY file, ALWAYS create a backup first.**
+
+- **Backup location**: `.backups/` directory in repository root
+- **Naming convention**: `filename.backup-YYYYMMDD-HHMMSS`
+- **Create directory if needed**: `mkdir -p .backups`
+
+**Example:**
+```bash
+# Create .backups directory if it doesn't exist
+mkdir -p /path/to/repo/.backups
+
+# Create timestamped backup
+cp /path/to/file /path/to/repo/.backups/file.backup-$(date +%Y%m%d-%H%M%S)
+
+# Then make your changes
+```
+
+**This applies to:**
+- Scripts (shell, Python, etc.)
+- Configuration files
+- Documentation
+- Any file that will be modified
 
 ### When Working with Scripts
 
