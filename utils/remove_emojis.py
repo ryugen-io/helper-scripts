@@ -180,6 +180,39 @@ Examples:
         log_error(f"No files found matching types: {', '.join(args.types)}")
         return 1
 
+    # Exclude certain files from processing
+    exclude_patterns = [
+        'remove_emojis.py',      # Don't modify self
+        'fix_nerdfonts.py',      # Don't modify nerd font fixer
+        '*.md',                   # Skip markdown (contains examples)
+        'theme.py',              # Theme file with emoji examples in comments
+        'theme.sh',              # Theme file with emoji examples in comments
+    ]
+
+    filtered_files = []
+    for f in files:
+        should_exclude = False
+        for pattern in exclude_patterns:
+            if pattern.startswith('*'):
+                # Glob pattern
+                if f.match(pattern):
+                    should_exclude = True
+                    break
+            else:
+                # Exact filename match
+                if f.name == pattern:
+                    should_exclude = True
+                    break
+
+        if not should_exclude:
+            filtered_files.append(f)
+
+    files = filtered_files
+
+    if not files:
+        log_error(f"No files remaining after exclusions")
+        return 1
+
     # Header
     tag = f"{Colors.MAUVE}[remove-emojis]{Colors.NC}"
     print(f"\n{tag} {CLEAN}  Removing Unicode emojis from files...\n")
