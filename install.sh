@@ -311,6 +311,17 @@ main() {
     log_header "Installing..."
     echo ""
 
+    # Deploy theme.sh first (always needed)
+    log_info "Deploying theme.sh (required for all scripts)..."
+    if [ -f "$SCRIPT_DIR/theme.sh" ]; then
+        cp "$SCRIPT_DIR/theme.sh" "$target_dir/theme.sh"
+        chmod +x "$target_dir/theme.sh"
+        log_success "  Deployed: theme.sh"
+    else
+        log_warn "  theme.sh not found - scripts will use inline colors"
+    fi
+    echo ""
+
     # Deploy scripts
     local deployed=0
     local failed=0
