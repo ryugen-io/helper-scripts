@@ -74,7 +74,7 @@ jobs:
       # Note: Logs are uploaded as artifacts here, but committed by the calling workflow
       - name: Upload skip check logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: skip-check-logs
           path: .github/workflows/logs/
