@@ -1,6 +1,6 @@
 #!/bin/bash
-# Interactive deployment script for Docker helper scripts
-# Copies templates and customizes them for a new project
+# Interactive installation script for helper scripts
+# Copies scripts and customizes them for a new project
 set -e
 set -o pipefail
 
@@ -98,18 +98,18 @@ prompt_yes_no() {
 select_scripts() {
     local -n arr=$1
 
-    log_header "Select scripts to deploy:"
+    log_header "Select scripts to install:"
     echo ""
 
     local scripts=(
-        "start.sh:Start container"
-        "stop.sh:Stop container"
-        "status.sh:Show container status"
-        "logs.sh:Check logs for errors/warnings"
-        "rebuild.sh:Rebuild container image"
-        "lines.sh:Count lines of code (Rust)"
-        "lint.sh:Lint shell scripts"
-        "fix_nerdfonts.py:Fix Nerd Font icons"
+        "docker/start.sh:Start container"
+        "docker/stop.sh:Stop container"
+        "docker/status.sh:Show container status"
+        "docker/logs.sh:Check logs for errors/warnings"
+        "docker/rebuild.sh:Rebuild container image"
+        "dev/lines.sh:Count lines of code (Rust)"
+        "dev/lint.sh:Lint shell scripts"
+        "utils/fix_nerdfonts.py:Fix Nerd Font icons"
     )
 
     echo -e "${TEXT}Available scripts:${NC}"
@@ -121,7 +121,7 @@ select_scripts() {
     done
 
     echo ""
-    echo -e "${TEXT}Select scripts to deploy:${NC}"
+    echo -e "${TEXT}Select scripts to install:${NC}"
     echo -e "${SUBTEXT}  - Enter numbers separated by spaces (e.g., 1 2 3)${NC}"
     echo -e "${SUBTEXT}  - Enter 'all' for all scripts${NC}"
     echo -e "${SUBTEXT}  - Enter 'core' for core scripts (start, stop, status, logs)${NC}"
@@ -137,7 +137,7 @@ select_scripts() {
             arr+=("$script")
         done
     elif [ "$selection" = "core" ]; then
-        arr=("start.sh" "stop.sh" "status.sh" "logs.sh")
+        arr=("docker/start.sh" "docker/stop.sh" "docker/status.sh" "docker/logs.sh")
     else
         for num in $selection; do
             if [[ "$num" =~ ^[0-9]+$ ]] && [ "$num" -ge 1 ] && [ "$num" -le "${#scripts[@]}" ]; then
@@ -173,11 +173,7 @@ customize_script() {
 
 main() {
     echo ""
-    log_header "╔════════════════════════════════════════════════════════════╗"
-    log_header "║                                                            ║"
-    log_header "║         ${ROCKET}  Docker Helper Scripts Deployment             ║"
-    log_header "║                                                            ║"
-    log_header "╚════════════════════════════════════════════════════════════╝"
+    log_header "${ROCKET}  Helper Scripts Installation"
     echo ""
 
     # Collect configuration
@@ -185,7 +181,7 @@ main() {
     echo ""
 
     local target_dir
-    prompt "Target directory for deployment" "." target_dir
+    prompt "Target directory for installation" "." target_dir
 
     # Expand relative paths
     if [[ "$target_dir" != /* ]]; then
@@ -198,7 +194,7 @@ main() {
             mkdir -p "$target_dir"
             log_success "Directory created: $target_dir"
         else
-            log_error "Deployment cancelled"
+            log_error "Installation cancelled"
             exit 1
         fi
     fi
@@ -242,19 +238,19 @@ main() {
     echo -e "${TEXT}Display name:${NC}      ${SAPPHIRE}${display_name}${NC}"
     echo -e "${TEXT}Dockerfile path:${NC}   ${SAPPHIRE}${dockerfile_path}${NC}"
     echo ""
-    echo -e "${TEXT}Scripts to deploy:${NC}"
+    echo -e "${TEXT}Scripts to install:${NC}"
     for script in "${selected_scripts[@]}"; do
         echo -e "  ${GREEN}${CHECK}${NC}  ${script}"
     done
     echo ""
 
-    if ! prompt_yes_no "Deploy these scripts?" "y"; then
-        log_warn "Deployment cancelled"
+    if ! prompt_yes_no "Install these scripts?" "y"; then
+        log_warn "Installation cancelled"
         exit 0
     fi
 
     echo ""
-    log_header "Deploying..."
+    log_header "Installing..."
     echo ""
 
     # Deploy scripts
@@ -263,7 +259,8 @@ main() {
 
     for script in "${selected_scripts[@]}"; do
         local source_file="$SCRIPT_DIR/$script"
-        local target_file="$target_dir/$script"
+        local script_name=$(basename "$script")
+        local target_file="$target_dir/$script_name"
 
         if [ ! -f "$source_file" ]; then
             log_error "Source file not found: $script"
@@ -273,8 +270,8 @@ main() {
 
         # Check if file exists
         if [ -f "$target_file" ]; then
-            if ! prompt_yes_no "  File exists: $script. Overwrite?" "n"; then
-                log_warn "  Skipped: $script"
+            if ! prompt_yes_no "  File exists: $script_name. Overwrite?" "n"; then
+                log_warn "  Skipped: $script_name"
                 continue
             fi
         fi
@@ -283,37 +280,37 @@ main() {
         cp "$source_file" "$target_file"
 
         # Customize if it's a shell script
-        if [[ "$script" == *.sh ]]; then
+        if [[ "$script_name" == *.sh ]]; then
             customize_script "$target_file" "$container_name" "$image_name" "$display_name" "$dockerfile_path"
         fi
 
         # Make executable
         chmod +x "$target_file"
 
-        log_success "  Deployed: $script"
+        log_success "  Deployed: $script_name"
         ((deployed++))
     done
 
     echo ""
-    log_header "Deployment Complete"
+    log_header "Installation Complete"
     echo ""
 
     if [ $deployed -gt 0 ]; then
-        log_success "$deployed script(s) deployed successfully"
+        log_success "$deployed script(s) installed successfully"
     fi
 
     if [ $failed -gt 0 ]; then
-        log_error "$failed script(s) failed to deploy"
+        log_error "$failed script(s) failed to install"
     fi
 
     echo ""
-    log_info "Scripts deployed to: ${SAPPHIRE}${target_dir}${NC}"
+    log_info "Scripts installed to: ${SAPPHIRE}${target_dir}${NC}"
     echo ""
 
     # Show next steps
     log_header "Next Steps"
     echo ""
-    echo -e "${TEXT}1. Review the deployed scripts:${NC}"
+    echo -e "${TEXT}1. Review the installed scripts:${NC}"
     echo -e "   ${SUBTEXT}cd ${target_dir}${NC}"
     echo ""
     echo -e "${TEXT}2. Test the scripts:${NC}"
@@ -322,12 +319,12 @@ main() {
     echo -e "${TEXT}3. Customize further if needed${NC}"
     echo ""
 
-    if printf '%s\n' "${selected_scripts[@]}" | grep -q "rebuild.sh"; then
+    if printf '%s\n' "${selected_scripts[@]}" | grep -q "docker/rebuild.sh"; then
         log_warn "Remember to customize the docker run command in rebuild.sh"
         echo ""
     fi
 
-    log_success "Deployment complete! ${ROCKET}"
+    log_success "Installation complete! ${ROCKET}"
     echo ""
 }
 
