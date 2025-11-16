@@ -109,17 +109,68 @@ def fix_icons_in_file(filepath: Path, dry_run: bool = False) -> bool:
         return False
 
 
+def write_claude_md(files: list, output_path: Path):
+    """
+    Write all file contents to a claude.md file
+
+    Args:
+        files: List of file paths to include
+        output_path: Path to the output file
+    """
+    try:
+        with output_path.open('w', encoding='utf-8') as out:
+            out.write("# Project Files for Claude AI\n\n")
+            out.write(f"Generated: {Path.cwd()}\n")
+            out.write(f"Total files: {len(files)}\n\n")
+            out.write("---\n\n")
+
+            for filepath in sorted(files):
+                if not filepath.exists() or not filepath.is_file():
+                    continue
+
+                try:
+                    content = filepath.read_text(encoding='utf-8')
+                    out.write(f"## File: {filepath.name}\n\n")
+                    out.write(f"**Path:** `{filepath}`\n\n")
+                    out.write("```")
+
+                    # Add language identifier based on file extension
+                    suffix = filepath.suffix.lstrip('.')
+                    if suffix:
+                        out.write(suffix)
+
+                    out.write("\n")
+                    out.write(content)
+                    if not content.endswith('\n'):
+                        out.write('\n')
+                    out.write("```\n\n")
+                    out.write("---\n\n")
+
+                except Exception as e:
+                    log_warn(f"Could not read {filepath}: {e}")
+
+        log_success(f"Created {output_path}")
+        return True
+
+    except Exception as e:
+        log_error(f"Error writing {output_path}: {e}")
+        return False
+
+
 def main():
     """Main function"""
     import argparse
 
     parser = argparse.ArgumentParser(
-        description='Fix Nerd Font icons in shell scripts',
+        description='Fix Nerd Font icons in files and generate claude.md',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog='''
 Examples:
   # Fix all .sh files in current directory
   python3 fix_nerdfonts.py
+
+  # Fix multiple file types and create claude.md
+  python3 fix_nerdfonts.py --filetypes sh md py --output claude.md
 
   # Dry run to see what would be changed
   python3 fix_nerdfonts.py --dry-run
@@ -132,7 +183,7 @@ Examples:
     parser.add_argument(
         'files',
         nargs='*',
-        help='Shell script files to fix (default: all *.sh in current directory)'
+        help='Files to fix (default: files based on --filetypes)'
     )
 
     parser.add_argument(
@@ -141,16 +192,30 @@ Examples:
         help='Show what would be changed without modifying files'
     )
 
+    parser.add_argument(
+        '--filetypes',
+        nargs='+',
+        default=['sh'],
+        help='File types to scan (e.g., sh md py txt). Default: sh'
+    )
+
+    parser.add_argument(
+        '--output',
+        help='Output file to write scanned contents (e.g., claude.md)'
+    )
+
     args = parser.parse_args()
 
     # Determine which files to process
     if args.files:
         files = [Path(f) for f in args.files]
     else:
-        files = list(Path('.').glob('*.sh'))
+        files = []
+        for filetype in args.filetypes:
+            files.extend(list(Path('.').glob(f'*.{filetype}')))
 
     if not files:
-        log_error("No shell script files found!")
+        log_error(f"No files found matching types: {', '.join(args.filetypes)}")
         return 1
 
     # Header
@@ -183,11 +248,21 @@ Examples:
 
         print()
 
+    # Generate claude.md if requested
+    if args.output:
+        output_path = Path(args.output)
+        print(f"{Colors.BLUE}Generating{Colors.NC} {output_path}...")
+        write_claude_md(files, output_path)
+        print()
+
     # Summary
     print(f"{Colors.GREEN}Summary:{Colors.NC}")
     print()
     print(f"{Colors.BLUE}  Total files:     {Colors.NC}{total_files}")
     print(f"{Colors.GREEN}  Files fixed:     {Colors.NC}{fixed_files}")
+
+    if args.output:
+        print(f"{Colors.SAPPHIRE}  Output file:     {Colors.NC}{args.output}")
 
     if args.dry_run and fixed_files > 0:
         print()
