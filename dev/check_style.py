@@ -5,19 +5,19 @@ Validates coding guidelines and Catppuccin Mocha theming consistency
 """
 
 import sys
-import re
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import List
 
 # Add .sys/theme to path for central theming
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 sys.path.insert(0, str(REPO_ROOT / '.sys' / 'theme'))
 
-# Import central theme
-from theme import Colors, Icons, log_success, log_error, log_warn, log_info
+from theme import (  # noqa: E402
+    Colors, Icons, log_success, log_error, log_warn, log_info
+)
 
-# Expected color palette (Catppuccin Mocha)
+
 EXPECTED_COLORS = {
     'RED': '243;139;168',
     'GREEN': '166;227;161',
@@ -27,6 +27,7 @@ EXPECTED_COLORS = {
     'SAPPHIRE': '116;199;236',
     'TEXT': '205;214;244',
 }
+
 
 class StyleChecker:
     def __init__(self):

@@ -176,8 +176,41 @@ log_success "Operation completed"
 ```python
 #!/usr/bin/env python3
 import sys
-sys.path.insert(0, '.sys/theme')
+from pathlib import Path
+
+# Add .sys/theme to path for central theming
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parent
+sys.path.insert(0, str(REPO_ROOT / '.sys' / 'theme'))
+
 from theme import Colors, Icons, log_success, log_error, log_warn, log_info
+
+# Load .env configuration
+def load_env_config(repo_root: Path) -> dict:
+    """Load configuration from .env file"""
+    config = {
+        'SYS_DIR': '.sys',
+        'GITHUB_DIR': '.github',
+        'SCRIPT_DIRS': 'docker,dev,utils'
+    }
+
+    # Try .sys/env/.env first, fallback to .sys/env/.env.example
+    sys_env_dir = repo_root / config['SYS_DIR'] / 'env'
+    for env_name in ['.env', '.env.example']:
+        env_file = sys_env_dir / env_name
+        if env_file.exists():
+            with open(env_file, 'r') as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith('#') and '=' in line:
+                        key, value = line.split('=', 1)
+                        config[key] = value
+            break
+
+    return config
+
+# Initialize config
+config = load_env_config(REPO_ROOT)
 ```
 
 ---
@@ -215,6 +248,38 @@ Lints shell scripts for common issues.
 - Missing shebang
 - Missing `set -e` or `set -o pipefail`
 - Executable permissions
+
+### pycompile.py
+Python compilation checker - validates Python syntax by compiling to bytecode.
+
+**Features:**
+- Compiles Python files using `py_compile`
+- Reports compilation errors with detailed messages
+- Filters out `__pycache__` and `.mypy_cache` directories
+- Color-coded output with compilation status
+
+**Usage:**
+```bash
+./dev/pycompile.py                    # Check current directory
+./dev/pycompile.py --path script.py   # Check specific file
+./dev/pycompile.py --recursive        # Check recursively
+```
+
+### pyclean.py
+Python cache cleaner - removes `__pycache__` and `.mypy_cache` directories.
+
+**Features:**
+- Scans for Python cache directories recursively
+- Shows size of each cache directory
+- Dry run mode to preview what would be removed
+- Safe removal with error handling
+
+**Usage:**
+```bash
+./dev/pyclean.py                      # Clean current directory
+./dev/pyclean.py --dry-run            # Preview what would be removed
+./dev/pyclean.py --path /path/to/dir  # Clean specific directory
+```
 
 ### shellcheck.py
 Python wrapper for advanced shellcheck integration.
