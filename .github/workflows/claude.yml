@@ -115,11 +115,30 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Download skip-check logs
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: skip-check-logs
+          path: .github/workflows/logs/
+
+      - name: Download claude workflow logs
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: claude-workflow-logs
+          path: .github/workflows/logs/
+
       - name: Commit and push workflow logs
         run: |
           source .github/workflows/scripts/ci-logger.sh
 
           log_step "persist" "Persisting workflow logs to repository"
+
+          # Show what logs we have
+          if [ -d .github/workflows/logs ]; then
+            log_info "Found $(ls -1 .github/workflows/logs/*.log 2>/dev/null | wc -l) log files"
+          fi
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
