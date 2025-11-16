@@ -29,6 +29,7 @@ DESCRIPTIONS = {
     'docker/rebuild.sh': 'Rebuild container image and recreate container',
     'dev/lines.sh': 'Count lines of code with detailed statistics',
     'dev/lint.sh': 'Lint shell scripts for common issues',
+    'dev/check_style.sh': 'Validate coding guidelines and theming consistency',
     'utils/fix_nerdfonts.py': 'Fix Nerd Font icon encoding issues in shell scripts',
     'utils/update_readme.py': 'Dynamically generate README.md based on repository contents',
     'install.sh': 'Interactive installation script for deploying scripts to projects',

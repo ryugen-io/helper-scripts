@@ -107,8 +107,9 @@ select_scripts() {
         "docker/status.sh:Show container status"
         "docker/logs.sh:Check logs for errors/warnings"
         "docker/rebuild.sh:Rebuild container image"
-        "dev/lines.sh:Count lines of code (Rust)"
+        "dev/lines.sh:Count lines of code"
         "dev/lint.sh:Lint shell scripts"
+        "dev/check_style.sh:Validate coding guidelines and theming"
         "utils/fix_nerdfonts.py:Fix Nerd Font icons"
     )
 
@@ -146,6 +147,19 @@ select_scripts() {
             fi
         done
     fi
+}
+
+remove_inline_comments() {
+    local file=$1
+
+    # Remove inline comments that start with "# " (excluding shebang and section headers)
+    # Preserve lines that are only comments (section headers)
+    # Remove inline comments like: echo "foo"  # This is a comment
+    sed -i '/^#!/!s/[[:space:]]*#[[:space:]].*$//' "$file"
+
+    # Remove empty lines that were created by comment removal (but keep intentional spacing)
+    # Only remove consecutive empty lines, keeping single empty lines for readability
+    sed -i '/^$/N;/^\n$/d' "$file"
 }
 
 customize_script() {
@@ -278,6 +292,11 @@ main() {
 
         # Copy file
         cp "$source_file" "$target_file"
+
+        # Remove inline comments to save space
+        if [[ "$script_name" == *.sh ]] || [[ "$script_name" == *.py ]]; then
+            remove_inline_comments "$target_file"
+        fi
 
         # Customize if it's a shell script
         if [[ "$script_name" == *.sh ]]; then

@@ -40,6 +40,7 @@ The script will:
 
 ### Development Tools
 
+- **check_style.sh** - Validate coding guidelines and theming consistency
 - **lines.sh** - Count lines of code with detailed statistics
 - **lint.sh** - Lint shell scripts for common issues
 
