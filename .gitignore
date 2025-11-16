@@ -17,3 +17,6 @@ Thumbs.db
 # Environment configuration (use .sys/env/.env.example as template)
 .sys/env/.env
 __pycache__/
+
+# CI/CD logs (stored as GitHub artifacts)
+.github/workflows/logs/*.log
