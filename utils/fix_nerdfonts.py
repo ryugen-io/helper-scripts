@@ -16,6 +16,31 @@ sys.path.insert(0, str(REPO_ROOT / '.sys' / 'theme'))
 # Import central theme
 from theme import Colors, Icons, log_success, log_error, log_warn, log_info
 
+
+def load_env_config(repo_root: Path) -> dict:
+    """Load configuration from .env file"""
+    config = {
+        'SYS_DIR': '.sys',
+        'GITHUB_DIR': '.github',
+        'SCRIPT_DIRS': 'docker,dev,utils'
+    }
+
+    # Try .sys/env/.env first, fallback to .sys/env/.env.example
+    sys_env_dir = repo_root / config['SYS_DIR'] / 'env'
+    for env_name in ['.env', '.env.example']:
+        env_file = sys_env_dir / env_name
+        if env_file.exists():
+            with open(env_file, 'r') as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith('#') and '=' in line:
+                        key, value = line.split('=', 1)
+                        config[key] = value
+            break
+
+    return config
+
+
 # Nerd Font Icon mappings (Unicode codepoints)
 NERD_FONTS = {
     'CHECK': Icons.CHECK,

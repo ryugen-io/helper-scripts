@@ -18,6 +18,30 @@ from theme import (  # noqa: E402
 )
 
 
+def load_env_config(repo_root: Path) -> dict:
+    """Load configuration from .env file"""
+    config = {
+        'SYS_DIR': '.sys',
+        'GITHUB_DIR': '.github',
+        'SCRIPT_DIRS': 'docker,dev,utils'
+    }
+
+    # Try .sys/env/.env first, fallback to .sys/env/.env.example
+    sys_env_dir = repo_root / config['SYS_DIR'] / 'env'
+    for env_name in ['.env', '.env.example']:
+        env_file = sys_env_dir / env_name
+        if env_file.exists():
+            with open(env_file, 'r') as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith('#') and '=' in line:
+                        key, value = line.split('=', 1)
+                        config[key] = value
+            break
+
+    return config
+
+
 EXPECTED_COLORS = {
     'RED': '243;139;168',
     'GREEN': '166;227;161',
@@ -36,6 +60,7 @@ class StyleChecker:
         self.failed_files = 0
         self.warnings = 0
         self.ignored_files = self._load_ignore_list()
+        self.config = load_env_config(REPO_ROOT)
 
     def _load_ignore_list(self) -> set:
         """Not used - files self-declare ignore status"""
@@ -114,8 +139,10 @@ class StyleChecker:
                     self.warnings += 1
 
             # Check for .env integration
-            if '.sys/env/.env' not in content and 'source "$REPO_ROOT/.sys/env/.env"' not in content:
-                log_warn("    Missing .env integration (.sys/env/.env)")
+            sys_dir = self.config.get('SYS_DIR', '.sys')
+            env_path = f'{sys_dir}/env/.env'
+            if env_path not in content and f'source "$REPO_ROOT/{env_path}"' not in content:
+                log_warn(f"    Missing .env integration ({env_path})")
                 self.warnings += 1
 
             # Check for description comment on line 2
@@ -125,7 +152,7 @@ class StyleChecker:
 
         if filepath.suffix == '.py':
             # Check for .env integration in Python scripts
-            if 'load_env()' not in content and '.sys/env/.env' not in content:
+            if 'load_env' not in content:
                 log_warn("    Missing .env integration (load_env function)")
                 self.warnings += 1
 
