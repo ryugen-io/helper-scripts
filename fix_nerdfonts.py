@@ -84,7 +84,7 @@ def fix_icons_in_file(filepath: Path, dry_run: bool = False) -> bool:
         # Pattern to match: readonly ICON_NAME=""
         # We'll replace the empty string with the actual icon
         for icon_name, icon_char in NERD_FONTS.items():
-            # Match patterns like: readonly CHECK=""
+            # Match patterns like: readonly CHECK=""
             pattern = rf'(readonly\s+{icon_name}=)""\s*$'
             replacement = rf'\1"{icon_char}"'
 
@@ -121,44 +121,47 @@ Examples:
   # Fix all .sh files in current directory
   python3 fix_nerdfonts.py
 
-  # Dry run to see what would be changed
-  python3 fix_nerdfonts.py --dry-run
-
-  # Fix specific file
-  python3 fix_nerdfonts.py status.sh
+  # Fix multiple file types
+  python3 fix_nerdfonts.py sh md py
         '''
     )
 
     parser.add_argument(
-        'files',
+        'filetypes',
         nargs='*',
-        help='Shell script files to fix (default: all *.sh in current directory)'
-    )
-
-    parser.add_argument(
-        '--dry-run',
-        action='store_true',
-        help='Show what would be changed without modifying files'
+        help='File types to fix (e.g., sh md py txt). Default: sh'
     )
 
     args = parser.parse_args()
 
     # Determine which files to process
-    if args.files:
-        files = [Path(f) for f in args.files]
-    else:
+    files = []
+
+    if not args.filetypes:
+        # Default: scan .sh files
         files = list(Path('.').glob('*.sh'))
+    else:
+        # Check if arguments are files or file types
+        for arg in args.filetypes:
+            arg_path = Path(arg)
+            if arg_path.exists() and arg_path.is_file():
+                # It's a specific file
+                files.append(arg_path)
+            else:
+                # It's a file type - scan for files with this extension
+                pattern = f'*.{arg}' if not arg.startswith('*.') else arg
+                files.extend(list(Path('.').glob(pattern)))
 
     if not files:
-        log_error("No shell script files found!")
+        if args.filetypes:
+            log_error(f"No files found matching types: {', '.join(args.filetypes)}")
+        else:
+            log_error("No files found!")
         return 1
 
     # Header
     tag = f"{Colors.MAUVE}[fix-nerdfonts]{Colors.NC}"
-    if args.dry_run:
-        print(f"{tag} {Colors.YELLOW}DRY RUN:{Colors.NC} Checking Nerd Font icons...")
-    else:
-        print(f"{tag} Fixing Nerd Font icons...")
+    print(f"{tag} Fixing Nerd Font icons...")
     print()
 
     total_files = 0
@@ -176,7 +179,7 @@ Examples:
         total_files += 1
         print(f"{Colors.BLUE}Processing{Colors.NC} {filepath.name}...")
 
-        if fix_icons_in_file(filepath, dry_run=args.dry_run):
+        if fix_icons_in_file(filepath, dry_run=False):
             fixed_files += 1
         else:
             log_info(f"No changes needed for {filepath.name}")
@@ -188,10 +191,6 @@ Examples:
     print()
     print(f"{Colors.BLUE}  Total files:     {Colors.NC}{total_files}")
     print(f"{Colors.GREEN}  Files fixed:     {Colors.NC}{fixed_files}")
-
-    if args.dry_run and fixed_files > 0:
-        print()
-        log_info(f"Run without {Colors.BLUE}--dry-run{Colors.NC} to apply changes")
 
     return 0
 

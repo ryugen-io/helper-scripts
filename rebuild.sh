@@ -17,11 +17,11 @@ readonly TEXT='\033[38;2;205;214;244m'       # #cdd6f4 - Normal text
 readonly NC='\033[0m'                         # No Color
 
 # Nerd Font Icons
-readonly INFO=""
-readonly WARN=""
-readonly CROSS=""
-readonly CHECK=""
-readonly DOCKER=""
+readonly INFO=""
+readonly WARN=""
+readonly CROSS=""
+readonly CHECK=""
+readonly DOCKER=""
 readonly HAMMER=""
 
 # CUSTOMIZE THIS

@@ -15,18 +15,17 @@ readonly SUBTEXT='\033[38;2;186;194;222m'    # #bac2de - Subtext
 readonly NC='\033[0m'                         # No Color
 
 # Nerd Font Icons
-readonly CHECK=""
-readonly CROSS=""
-readonly WARN=""
-readonly INFO=""
-readonly SERVER=""
-readonly DOCKER=""
-readonly STATUS=""
-readonly CLOCK=""
-readonly MEM=""
-readonly CPU=""
-readonly NET=""
-
+readonly CHECK=""
+readonly CROSS=""
+readonly WARN=""
+readonly INFO=""
+readonly SERVER=""
+readonly DOCKER=""
+readonly STATUS=""
+readonly CLOCK=""
+readonly MEM=""
+readonly CPU=""
+readonly NET=""
 # CUSTOMIZE THIS
 readonly CONTAINER_NAME="your-container-name"
 readonly DISPLAY_NAME="Your Service"

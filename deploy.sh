@@ -16,15 +16,14 @@ readonly SUBTEXT='\033[38;2;186;194;222m'    # #bac2de - Subtext
 readonly NC='\033[0m'                         # No Color
 
 # Nerd Font Icons
-readonly CHECK=""
-readonly CROSS=""
-readonly WARN=""
-readonly INFO=""
+readonly CHECK=""
+readonly CROSS=""
+readonly WARN=""
+readonly INFO=""
 readonly ROCKET=""
 readonly FOLDER=""
 readonly QUESTION=""
-readonly DOCKER=""
-
+readonly DOCKER=""
 readonly SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 log_success() {
