@@ -88,7 +88,7 @@ main() {
     local failed=0
 
     echo ""
-    log_header "${MAUVE}[format]${NC} ${MAGIC}  Shell Script Formatter (shfmt)"
+    log_header "${MAUVE}[format]${NC} Shell Script Formatter (shfmt)"
     echo ""
 
     # Parse command line arguments
@@ -176,10 +176,10 @@ main() {
         log_error "Some files failed to format"
         exit 1
     elif [ $formatted -gt 0 ]; then
-        log_success "All files formatted successfully! ${MAGIC}"
+        log_success "All files formatted successfully!"
         exit 0
     else
-        log_success "All files already formatted correctly! ${MAGIC}"
+        log_success "All files already formatted correctly!"
         exit 0
     fi
 }
