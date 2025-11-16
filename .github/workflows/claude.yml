@@ -26,7 +26,7 @@ jobs:
       )
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       pull-requests: read
       issues: read
       id-token: write
@@ -102,8 +102,20 @@ jobs:
           path: .github/workflows/logs/
           retention-days: 30
 
+  # This job always runs to persist logs, even when claude is skipped
+  persist-logs:
+    needs: [check-skip, claude]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
       - name: Commit and push workflow logs
-        if: always()
         run: |
           source .github/workflows/scripts/ci-logger.sh
 
@@ -114,7 +126,7 @@ jobs:
           git add .github/workflows/logs/*.log || true
 
           if ! git diff --cached --quiet; then
-            git commit -m "chore: Add claude workflow logs [skip ci]"
+            git commit -m "chore: Add workflow logs [skip ci]"
 
             # Determine branch name (use head ref for PRs, ref name otherwise)
             BRANCH_NAME="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
