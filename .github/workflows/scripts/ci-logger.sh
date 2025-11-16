@@ -3,7 +3,7 @@
 # Usage: source this file in your workflow scripts
 
 # Configuration
-readonly LOG_DIR=".github/workflows/logs"
+readonly LOG_DIR=".github/logs"
 readonly LOG_FILE="${LOG_DIR}/$(date +%Y%m%d-%H%M%S)-workflow.log"
 
 # Ensure log directory exists

@@ -99,7 +99,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: claude-review-logs
-          path: .github/workflows/logs/
+          path: .github/logs/
           retention-days: 30
 
       - name: Download skip-check logs
@@ -108,7 +108,7 @@ jobs:
         continue-on-error: true
         with:
           name: skip-check-logs
-          path: .github/workflows/logs/
+          path: .github/logs/
 
       - name: Download workflow logs
         if: always()
@@ -116,7 +116,7 @@ jobs:
         continue-on-error: true
         with:
           name: claude-review-logs
-          path: .github/workflows/logs/
+          path: .github/logs/
 
       - name: Commit and push workflow logs
         if: always()
@@ -126,11 +126,11 @@ jobs:
           log_step "persist" "Persisting workflow logs to repository"
 
           # Debug: Show what logs exist
-          if [ -d .github/workflows/logs ]; then
-            LOG_COUNT=$(ls -1 .github/workflows/logs/*.log 2>/dev/null | wc -l)
+          if [ -d .github/logs ]; then
+            LOG_COUNT=$(ls -1 .github/logs/*.log 2>/dev/null | wc -l)
             if [ "$LOG_COUNT" -gt 0 ]; then
-              log_info "Found $LOG_COUNT log file(s) in .github/workflows/logs/"
-              ls -lah .github/workflows/logs/
+              log_info "Found $LOG_COUNT log file(s) in .github/logs/"
+              ls -lah .github/logs/
             else
               log_warn "Directory exists but no log files found!"
             fi
@@ -142,7 +142,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           # Add all log files
-          git add .github/workflows/logs/*.log || true
+          git add .github/logs/*.log || true
 
           if ! git diff --cached --quiet; then
             git commit -m "chore: Add code-review workflow logs [skip ci]"

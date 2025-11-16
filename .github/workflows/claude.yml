@@ -101,7 +101,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: claude-workflow-logs
-          path: .github/workflows/logs/
+          path: .github/logs/
           retention-days: 30
 
   # This job always runs to persist logs, even when claude is skipped
@@ -122,14 +122,14 @@ jobs:
         continue-on-error: true
         with:
           name: skip-check-logs
-          path: .github/workflows/logs/
+          path: .github/logs/
 
       - name: Download claude workflow logs
         uses: actions/download-artifact@v4
         continue-on-error: true
         with:
           name: claude-workflow-logs
-          path: .github/workflows/logs/
+          path: .github/logs/
 
       - name: Commit and push workflow logs
         run: |
@@ -138,13 +138,13 @@ jobs:
           log_step "persist" "Persisting workflow logs to repository"
 
           # Show what logs we have
-          if [ -d .github/workflows/logs ]; then
-            log_info "Found $(ls -1 .github/workflows/logs/*.log 2>/dev/null | wc -l) log files"
+          if [ -d .github/logs ]; then
+            log_info "Found $(ls -1 .github/logs/*.log 2>/dev/null | wc -l) log files"
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .github/workflows/logs/*.log || true
+          git add .github/logs/*.log || true
 
           if ! git diff --cached --quiet; then
             git commit -m "chore: Add workflow logs [skip ci]"

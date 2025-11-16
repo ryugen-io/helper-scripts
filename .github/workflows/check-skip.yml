@@ -159,5 +159,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: skip-check-logs
-          path: .github/workflows/logs/
+          path: .github/logs/
           retention-days: 30
