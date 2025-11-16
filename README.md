@@ -11,7 +11,7 @@
 - [CLAUDE.md](CLAUDE.md)
 - [dev/check_style.py](dev/check_style.py)
 - [dev/format.py](dev/format.py)
-- [dev/lines.sh](dev/lines.sh)
+- [dev/lines.py](dev/lines.py)
 - [dev/lint.sh](dev/lint.sh)
 - [dev/shellcheck.py](dev/shellcheck.py)
 - [dev/test.bats](dev/test.bats)
