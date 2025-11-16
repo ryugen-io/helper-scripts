@@ -26,7 +26,6 @@ readonly CHART="󰈙"    # Chart/graph
 readonly PLAY=""      # Play button
 readonly HAMMER=""    # Hammer/build
 readonly CLEAN=""     # Broom/clean
-readonly MAGIC="✨"    # Sparkles (formatter)
 
 # Standard logging functions for consistent output
 log_success() {
@@ -52,4 +51,4 @@ log_header() {
 # Export all variables so they're available in subshells
 export RED GREEN YELLOW BLUE MAUVE SAPPHIRE TEXT SUBTEXT NC
 export CHECK CROSS WARN INFO DOCKER ROCKET FOLDER QUESTION
-export CHART PLAY HAMMER CLEAN MAGIC
+export CHART PLAY HAMMER CLEAN
