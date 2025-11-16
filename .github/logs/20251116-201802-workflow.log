@@ -1,0 +1,35 @@
+[2025-11-16 20:18:02] [lines] Analyzing changed files...
+[2025-11-16 20:18:02] [info]   .github/skips/generate_skip_hash.py        136 lines (103 code, 7 comments, 26 blank)
+[2025-11-16 20:18:02] [info]   .github/workflows/check-skip.yml           163 lines (136 code, 11 comments, 16 blank)
+[2025-11-16 20:18:02] [info]   .github/workflows/claude-code-review.yml   161 lines (114 code, 18 comments, 29 blank)
+[2025-11-16 20:18:02] [info]   .github/workflows/claude.yml               163 lines (126 code, 10 comments, 27 blank)
+[2025-11-16 20:18:02] [info]   .github/workflows/scripts/ci-lines.sh      136 lines (87 code, 22 comments, 27 blank)
+[2025-11-16 20:18:02] [info]   .github/workflows/scripts/ci-logger.sh      74 lines (54 code, 9 comments, 11 blank)
+[2025-11-16 20:18:02] [info]   .github/workflows/scripts/update_readme.py   103 lines (74 code, 9 comments, 20 blank)
+[2025-11-16 20:18:02] [info]   .github/workflows/update-readme.yml        172 lines (136 code, 5 comments, 31 blank)
+[2025-11-16 20:18:02] [info]   .sys/theme/theme.py                         64 lines (55 code, 2 comments, 7 blank)
+[2025-11-16 20:18:02] [info]   .sys/theme/theme.sh                         54 lines (39 code, 7 comments, 8 blank)
+[2025-11-16 20:18:02] [info]   dev/check_style.py                         239 lines (171 code, 18 comments, 50 blank)
+[2025-11-16 20:18:02] [info]   dev/format.py                              247 lines (181 code, 19 comments, 47 blank)
+[2025-11-16 20:18:02] [info]   dev/lines.sh                               220 lines (148 code, 32 comments, 40 blank)
+[2025-11-16 20:18:02] [info]   dev/lint.sh                                153 lines (99 code, 25 comments, 29 blank)
+[2025-11-16 20:18:02] [info]   dev/shellcheck.py                          199 lines (151 code, 14 comments, 34 blank)
+[2025-11-16 20:18:02] [info]   dev/test.py                                156 lines (121 code, 9 comments, 26 blank)
+[2025-11-16 20:18:02] [info]   docker/logs.sh                              90 lines (59 code, 15 comments, 16 blank)
+[2025-11-16 20:18:02] [info]   docker/rebuild.sh                           87 lines (48 code, 21 comments, 18 blank)
+[2025-11-16 20:18:02] [info]   docker/start.sh                             79 lines (46 code, 20 comments, 13 blank)
+[2025-11-16 20:18:02] [info]   docker/status.sh                           142 lines (98 code, 20 comments, 24 blank)
+[2025-11-16 20:18:02] [info]   docker/stop.sh                              59 lines (36 code, 12 comments, 11 blank)
+[2025-11-16 20:18:02] [info]   install.sh                                 378 lines (272 code, 34 comments, 72 blank)
+[2025-11-16 20:18:02] [info]   temp.sh                                      4 lines (1 code, 2 comments, 1 blank)
+[2025-11-16 20:18:02] [info]   utils/fix_nerdfonts.py                     279 lines (202 code, 28 comments, 49 blank)
+[2025-11-16 20:18:02] [info]   utils/remove_emojis.py                     269 lines (194 code, 25 comments, 50 blank)
+[2025-11-16 20:18:02] [info]   utils/update_readme.py                     103 lines (74 code, 9 comments, 20 blank)
+[2025-11-16 20:18:02] [summary] Line Count Summary
+[2025-11-16 20:18:02] [info]   Files analyzed:      26
+[2025-11-16 20:18:02] [info]   Code lines:        2825
+[2025-11-16 20:18:02] [info]   Comment lines:      403
+[2025-11-16 20:18:02] [info]   Blank lines:        702
+[2025-11-16 20:18:02] [info]   Total lines:       3930
+[2025-11-16 20:18:02] [info]   Average/file:       108 lines
+[2025-11-16 20:18:02] [success]   Line count analysis complete!
