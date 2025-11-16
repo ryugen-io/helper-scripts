@@ -125,7 +125,7 @@ main() {
     local failed=0
 
     echo ""
-    log_header "${MAGIC}  Shell Script Formatter (shfmt)"
+    log_header "${MAUVE}[format]${NC} ${MAGIC}  Shell Script Formatter (shfmt)"
     echo ""
 
     # Parse command line arguments

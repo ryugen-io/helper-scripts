@@ -189,7 +189,7 @@ check_file() {
 # Main function
 main() {
     echo ""
-    log_header "${CHART}  Helper Scripts Style Checker"
+    log_header "${MAUVE}[style]${NC} ${CHART}  Helper Scripts Style Checker"
     echo ""
     log_info "Validating coding guidelines and theming consistency"
     echo ""

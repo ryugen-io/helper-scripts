@@ -241,7 +241,7 @@ customize_script() {
 
 main() {
     echo ""
-    log_header "${ROCKET}  Helper Scripts Installation"
+    log_header "${MAUVE}[install]${NC} ${ROCKET}  Helper Scripts Installation"
     echo ""
 
     # Collect configuration
