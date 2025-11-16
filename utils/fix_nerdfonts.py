@@ -161,7 +161,7 @@ Examples:
   python3 fix_nerdfonts.py
 
   # Fix multiple file types
-  python3 fix_nerdfonts.py sh md py
+  python3 fix_nerdfonts.py --types sh md py
 
   # Fix files in a specific directory
   python3 fix_nerdfonts.py --path /path/to/scripts
@@ -169,21 +169,26 @@ Examples:
   # Fix files recursively
   python3 fix_nerdfonts.py --recursive --path /path/to/scripts
 
+  # Preview changes without modifying files
+  python3 fix_nerdfonts.py --dry-run
+
   # Fix a specific file
   python3 fix_nerdfonts.py --path /path/to/script.sh
         '''
     )
 
     parser.add_argument(
-        'filetypes',
-        nargs='*',
-        help='File types to fix (e.g., sh md py txt). Default: sh'
+        '-p', '--path',
+        type=str,
+        default='.',
+        help='Path to file or directory to process (default: current directory)'
     )
 
     parser.add_argument(
-        '-p', '--path',
-        type=str,
-        help='Path to file or directory to process. Default: current directory'
+        '-t', '--types',
+        nargs='+',
+        default=['sh'],
+        help='File extensions to process (default: sh)'
     )
 
     parser.add_argument(
@@ -192,48 +197,47 @@ Examples:
         help='Search recursively in subdirectories'
     )
 
+    parser.add_argument(
+        '--dry-run',
+        action='store_true',
+        help='Preview changes without modifying files'
+    )
+
     args = parser.parse_args()
 
     # Determine base path
-    base_path = Path(args.path) if args.path else Path('.')
+    base_path = Path(args.path)
+
+    if not base_path.exists():
+        log_error(f"Path not found: {base_path}")
+        return 1
 
     # Determine which files to process
     files = []
 
-    # Check if base_path is a specific file
     if base_path.is_file():
         files.append(base_path)
     elif base_path.is_dir():
-        if not args.filetypes:
-            # Default: scan .sh files
-            pattern = '**/*.sh' if args.recursive else '*.sh'
-            files = list(base_path.glob(pattern))
-        else:
-            # Check if arguments are files or file types
-            for arg in args.filetypes:
-                arg_path = Path(arg)
-                if arg_path.exists() and arg_path.is_file():
-                    # It's a specific file
-                    files.append(arg_path)
-                else:
-                    # It's a file type - scan for files with this extension
-                    ext = arg.lstrip('*.')
-                    pattern = f'**/*.{ext}' if args.recursive else f'*.{ext}'
-                    files.extend(list(base_path.glob(pattern)))
+        for ext in args.types:
+            ext = ext.lstrip('*.')
+            pattern = f'**/*.{ext}' if args.recursive else f'*.{ext}'
+            files.extend(base_path.glob(pattern))
     else:
-        log_error(f"Path not found: {base_path}")
+        log_error(f"Invalid path: {base_path}")
         return 1
 
     if not files:
-        if args.filetypes:
-            log_error(f"No files found matching types: {', '.join(args.filetypes)}")
-        else:
-            log_error("No files found!")
+        log_error(f"No files found matching types: {', '.join(args.types)}")
         return 1
 
     # Header
     tag = f"{Colors.MAUVE}[fix-nerdfonts]{Colors.NC}"
-    print(f"{tag} Fixing Nerd Font icons...")
+    mode = "Preview mode" if args.dry_run else "Fixing Nerd Font icons"
+    print(f"\n{tag} {mode}...\n")
+
+    log_info(f"Processing {len(files)} file(s)")
+    if args.dry_run:
+        log_warn("DRY RUN - No files will be modified")
     print()
 
     total_files = 0
@@ -249,20 +253,24 @@ Examples:
             continue
 
         total_files += 1
-        print(f"{Colors.BLUE}Processing{Colors.NC} {filepath.name}...")
 
-        if fix_icons_in_file(filepath, dry_run=False):
+        if fix_icons_in_file(filepath, dry_run=args.dry_run):
             fixed_files += 1
         else:
-            log_info(f"No changes needed for {filepath.name}")
-
-        print()
+            print(f"  {Colors.TEXT}{filepath.name}{Colors.NC} {Colors.SUBTEXT}(no changes needed){Colors.NC}")
 
     # Summary
-    print(f"{Colors.GREEN}Summary:{Colors.NC}")
-    print()
+    print(f"\n{Colors.GREEN}Summary:{Colors.NC}\n")
     print(f"{Colors.BLUE}  Total files:     {Colors.NC}{total_files}")
     print(f"{Colors.GREEN}  Files fixed:     {Colors.NC}{fixed_files}")
+    print(f"{Colors.TEXT}  No changes:      {Colors.NC}{total_files - fixed_files}")
+    print()
+
+    if fixed_files > 0:
+        if args.dry_run:
+            log_warn("Run without --dry-run to apply changes")
+        else:
+            log_success("Nerd Font icon fix complete!")
 
     return 0
 
