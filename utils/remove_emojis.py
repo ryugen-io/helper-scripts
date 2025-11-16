@@ -184,9 +184,6 @@ Examples:
     exclude_patterns = [
         'remove_emojis.py',      # Don't modify self
         'fix_nerdfonts.py',      # Don't modify nerd font fixer
-        '*.md',                   # Skip markdown (contains examples)
-        'theme.py',              # Theme file with emoji examples in comments
-        'theme.sh',              # Theme file with emoji examples in comments
     ]
 
     filtered_files = []

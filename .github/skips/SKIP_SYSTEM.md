@@ -80,11 +80,11 @@ git push
 
 ## Workflow Outputs
 
-- ✅ No .skip file found - proceeding with Claude CI/CD
-- ⏭️ Valid .skip file found (content verified) - Claude CI/CD will be skipped
-- ⏭️ Valid .skip file found (hash verified) - Claude CI/CD will be skipped
-- ⚠️ .skip file found but invalid content - proceeding with Claude CI/CD for security
-- ⚠️ .skip file found but hash mismatch - proceeding with Claude CI/CD for security
+-  No .skip file found - proceeding with Claude CI/CD
+-  Valid .skip file found (content verified) - Claude CI/CD will be skipped
+-  Valid .skip file found (hash verified) - Claude CI/CD will be skipped
+-  .skip file found but invalid content - proceeding with Claude CI/CD for security
+-  .skip file found but hash mismatch - proceeding with Claude CI/CD for security
 
 ## Create Your Own Hash
 

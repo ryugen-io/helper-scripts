@@ -118,10 +118,10 @@ Uses Catppuccin Mocha palette:
 ## Icons
 
 Requires a Nerd Font to display icons correctly. Icons used:
-- ✓ Check
-- ✗ Cross
-- ⚠ Warning
-- ℹ Info
+-  Check
+-  Cross
+-  Warning
+-  Info
 -  Docker
 -  Server
 -  Clock
