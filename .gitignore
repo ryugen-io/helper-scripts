@@ -13,3 +13,6 @@ Thumbs.db
 *.tmp
 *.bak
 *.backup*
+
+# CI/CD Skip file (use .skip.example as template)
+.skip
