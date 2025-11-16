@@ -1,0 +1,44 @@
+[2025-11-16 21:54:11] [workflow] README Update Workflow
+[2025-11-16 21:54:11] [readme] Generating README from scripts...
+[2025-11-16 21:54:11] [success]   README generated successfully
+[2025-11-16 21:54:11] [check] Checking for changes...
+[2025-11-16 21:54:11] [info]   Changes detected in README.md
+[2025-11-16 21:54:11] [info]   Workflow log saved to: .github/logs/20251116-215411-workflow.log
+[2025-11-16 21:54:11] [lines] Analyzing changed files...
+[2025-11-16 21:54:11] [info]   .github/skips/generate_skip_hash.py        136 lines (103 code, 7 comments, 26 blank)
+[2025-11-16 21:54:11] [info]   .github/workflows/check-skip.yml           163 lines (136 code, 11 comments, 16 blank)
+[2025-11-16 21:54:11] [info]   .github/workflows/claude-code-review.yml   161 lines (114 code, 18 comments, 29 blank)
+[2025-11-16 21:54:11] [info]   .github/workflows/claude.yml               163 lines (126 code, 10 comments, 27 blank)
+[2025-11-16 21:54:11] [info]   .github/workflows/scripts/ci-lines.sh      136 lines (87 code, 22 comments, 27 blank)
+[2025-11-16 21:54:11] [info]   .github/workflows/scripts/ci-logger.sh      76 lines (54 code, 11 comments, 11 blank)
+[2025-11-16 21:54:11] [info]   .github/workflows/scripts/update_readme.py   103 lines (74 code, 9 comments, 20 blank)
+[2025-11-16 21:54:11] [info]   .github/workflows/update-readme.yml        172 lines (136 code, 5 comments, 31 blank)
+[2025-11-16 21:54:11] [info]   .sys/theme/theme.py                         76 lines (57 code, 2 comments, 17 blank)
+[2025-11-16 21:54:11] [info]   .sys/theme/theme.sh                         56 lines (39 code, 9 comments, 8 blank)
+[2025-11-16 21:54:11] [info]   dev/check_style.py                         273 lines (196 code, 20 comments, 57 blank)
+[2025-11-16 21:54:11] [info]   dev/format.py                              247 lines (181 code, 19 comments, 47 blank)
+[2025-11-16 21:54:11] [info]   dev/lines.py                               253 lines (177 code, 23 comments, 53 blank)
+[2025-11-16 21:54:11] [info]   dev/lint.py                                213 lines (149 code, 17 comments, 47 blank)
+[2025-11-16 21:54:11] [info]   dev/pyclean.py                             203 lines (149 code, 11 comments, 43 blank)
+[2025-11-16 21:54:11] [info]   dev/pycompile.py                           199 lines (146 code, 11 comments, 42 blank)
+[2025-11-16 21:54:11] [info]   dev/pylint.py                              287 lines (217 code, 15 comments, 55 blank)
+[2025-11-16 21:54:11] [info]   dev/shellcheck.py                          193 lines (145 code, 14 comments, 34 blank)
+[2025-11-16 21:54:11] [info]   dev/test.py                                151 lines (115 code, 10 comments, 26 blank)
+[2025-11-16 21:54:11] [info]   docker/logs.py                             126 lines (100 code, 1 comments, 25 blank)
+[2025-11-16 21:54:11] [info]   docker/rebuild.py                          124 lines (100 code, 1 comments, 23 blank)
+[2025-11-16 21:54:11] [info]   docker/start.py                            112 lines (90 code, 1 comments, 21 blank)
+[2025-11-16 21:54:11] [info]   docker/status.py                           209 lines (171 code, 1 comments, 37 blank)
+[2025-11-16 21:54:11] [info]   docker/stop.py                              86 lines (67 code, 1 comments, 18 blank)
+[2025-11-16 21:54:11] [info]   install.py                                 364 lines (285 code, 1 comments, 78 blank)
+[2025-11-16 21:54:11] [info]   temp.sh                                      7 lines (1 code, 5 comments, 1 blank)
+[2025-11-16 21:54:11] [info]   utils/fix_nerdfonts.py                     307 lines (216 code, 37 comments, 54 blank)
+[2025-11-16 21:54:12] [info]   utils/remove_emojis.py                     276 lines (188 code, 35 comments, 53 blank)
+[2025-11-16 21:54:12] [info]   utils/update_readme.py                     103 lines (74 code, 9 comments, 20 blank)
+[2025-11-16 21:54:12] [summary] Line Count Summary
+[2025-11-16 21:54:12] [info]   Files analyzed:      29
+[2025-11-16 21:54:12] [info]   Code lines:        3693
+[2025-11-16 21:54:12] [info]   Comment lines:      336
+[2025-11-16 21:54:12] [info]   Blank lines:        946
+[2025-11-16 21:54:12] [info]   Total lines:       4975
+[2025-11-16 21:54:12] [info]   Average/file:       127 lines
+[2025-11-16 21:54:12] [success]   Line count analysis complete!
