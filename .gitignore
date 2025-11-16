@@ -13,3 +13,6 @@ Thumbs.db
 *.tmp
 *.bak
 *.backup*
+
+# Generated files
+claude.md
