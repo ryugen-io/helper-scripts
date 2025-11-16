@@ -9,40 +9,16 @@ import re
 from pathlib import Path
 from typing import List, Tuple
 
-# Catppuccin Mocha color palette (24-bit true color)
-class Colors:
-    RED = '\033[38;2;243;139;168m'        # #f38ba8 - Errors
-    GREEN = '\033[38;2;166;227;161m'      # #a6e3a1 - Success
-    YELLOW = '\033[38;2;249;226;175m'     # #f9e2af - Warnings
-    BLUE = '\033[38;2;137;180;250m'       # #89b4fa - Info
-    MAUVE = '\033[38;2;203;166;247m'      # #cba6f7 - Headers
-    SAPPHIRE = '\033[38;2;116;199;236m'   # #74c7ec - Success highlights
-    TEXT = '\033[38;2;205;214;244m'       # #cdd6f4 - Normal text
-    SUBTEXT = '\033[38;2;186;194;222m'    # #bac2de - Subtext
-    NC = '\033[0m'                         # No Color
+# Add .sys/theme to path for central theming
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parent
+sys.path.insert(0, str(REPO_ROOT / '.sys' / 'theme'))
 
-# Nerd Font Icons
-CHECK = '\uf00c'   #
-CROSS = '\uf00d'   #
-WARN = '\uf071'    #
-INFO = '\uf05a'    #
-CLEAN = '\uf0c2'   #
+# Import central theme
+from theme import Colors, Icons, log_success, log_error, log_warn, log_info
 
-def log_success(msg: str):
-    """Log success message with icon"""
-    print(f"{Colors.GREEN}{CHECK}  {Colors.NC}{msg}")
-
-def log_error(msg: str):
-    """Log error message with icon"""
-    print(f"{Colors.RED}{CROSS}  {Colors.NC}{msg}", file=sys.stderr)
-
-def log_warn(msg: str):
-    """Log warning message with icon"""
-    print(f"{Colors.YELLOW}{WARN}  {Colors.NC}{msg}")
-
-def log_info(msg: str):
-    """Log info message with icon"""
-    print(f"{Colors.BLUE}{INFO}  {Colors.NC}{msg}")
+# Use central theme icons
+CLEAN = Icons.CLEAN
 
 def remove_emojis(text: str) -> str:
     """

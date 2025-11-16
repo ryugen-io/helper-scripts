@@ -8,62 +8,36 @@ import sys
 import re
 from pathlib import Path
 
-# Catppuccin Mocha color palette (24-bit true color)
-class Colors:
-    RED = '\033[38;2;243;139;168m'        # #f38ba8 - Errors
-    GREEN = '\033[38;2;166;227;161m'      # #a6e3a1 - Success
-    YELLOW = '\033[38;2;249;226;175m'     # #f9e2af - Warnings
-    BLUE = '\033[38;2;137;180;250m'       # #89b4fa - Info
-    MAUVE = '\033[38;2;203;166;247m'      # #cba6f7 - Headers
-    SAPPHIRE = '\033[38;2;116;199;236m'   # #74c7ec - Success highlights
-    TEXT = '\033[38;2;205;214;244m'       # #cdd6f4 - Normal text
-    SUBTEXT = '\033[38;2;186;194;222m'    # #bac2de - Subtext
-    NC = '\033[0m'                         # No Color
+# Add .sys/theme to path for central theming
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parent
+sys.path.insert(0, str(REPO_ROOT / '.sys' / 'theme'))
 
-# Nerd Font Icons
-CHECK = '\uf00c'   #
-CROSS = '\uf00d'   #
-WARN = '\uf071'    #
-INFO = '\uf05a'    #
+# Import central theme
+from theme import Colors, Icons, log_success, log_error, log_warn, log_info
 
 # Nerd Font Icon mappings (Unicode codepoints)
 NERD_FONTS = {
-    'CHECK': '\uf00c',      #
-    'CROSS': '\uf00d',      #
-    'WARN': '\uf071',       #
-    'INFO': '\uf05a',       #
-    'SERVER': '\uf233',     # 󰒋
-    'DOCKER': '\uf308',     #
-    'CONTAINER': '\uf1b2',  #
-    'CHART': '\uf200',      # 󰈙
-    'CLOCK': '\uf64f',      # 󰥔
-    'MEM': '\uf538',        # 󰍛
-    'CPU': '\uf2db',        # 󰻠
-    'NET': '\uf6ff',        # 󰈀
-    'LOG': '\uf15c',        #
-    'FILE': '\uf15b',       #
-    'DATABASE': '\uf1c0',   #
-    'PLAY': '\uf04b',       #
-    'STOP': '\uf04d',       #
-    'RESTART': '\uf01e',    #
-    'STATUS': '\uf05a',     #
+    'CHECK': Icons.CHECK,
+    'CROSS': Icons.CROSS,
+    'WARN': Icons.WARN,
+    'INFO': Icons.INFO,
+    'SERVER': Icons.SERVER,
+    'DOCKER': Icons.DOCKER,
+    'CONTAINER': Icons.CONTAINER,
+    'CHART': Icons.CHART,
+    'CLOCK': Icons.CLOCK,
+    'MEM': Icons.MEM,
+    'CPU': Icons.CPU,
+    'NET': Icons.NET,
+    'LOG': Icons.LOG,
+    'FILE': Icons.FILE,
+    'DATABASE': Icons.DATABASE,
+    'PLAY': Icons.PLAY,
+    'STOP': Icons.STOP,
+    'RESTART': Icons.RESTART,
+    'STATUS': Icons.STATUS,
 }
-
-def log_success(msg: str):
-    """Log success message with icon"""
-    print(f"{Colors.GREEN}{CHECK}  {Colors.NC}{msg}")
-
-def log_error(msg: str):
-    """Log error message with icon"""
-    print(f"{Colors.RED}{CROSS}  {Colors.NC}{msg}", file=sys.stderr)
-
-def log_warn(msg: str):
-    """Log warning message with icon"""
-    print(f"{Colors.YELLOW}{WARN}  {Colors.NC}{msg}")
-
-def log_info(msg: str):
-    """Log info message with icon"""
-    print(f"{Colors.BLUE}{INFO}  {Colors.NC}{msg}")
 
 def get_patterns_for_filetype(filepath: Path, icon_name: str) -> list:
     """
