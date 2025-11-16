@@ -24,11 +24,35 @@ Collection of standardized shell scripts for Docker container management.
 - **lines.sh** - Count lines of code in Rust files with detailed statistics
 - **lint.sh** - Lint shell scripts for common issues
 
+### Deployment
+
+- **deploy.sh** - Interactive deployment script to copy and customize templates
+
 ### Utilities
 
 - **fix_nerdfonts.py** - Fix Nerd Font icon encoding issues in shell scripts
 
-## Usage
+## Quick Start
+
+### Interactive Deployment (Recommended)
+
+Use the interactive deployment script to automatically copy and customize scripts:
+
+```bash
+./deploy.sh
+```
+
+The script will ask you for:
+- Target directory
+- Container name
+- Docker image name
+- Display name for output
+- Path to Dockerfile
+- Which scripts to deploy
+
+It automatically replaces all `# CUSTOMIZE THIS` variables and makes scripts executable.
+
+### Manual Deployment
 
 1. Copy the template scripts to your project directory
 2. Customize the following variables in each script:

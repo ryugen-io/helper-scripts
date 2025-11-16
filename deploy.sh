@@ -1,0 +1,336 @@
+#!/bin/bash
+# Interactive deployment script for Docker helper scripts
+# Copies templates and customizes them for a new project
+set -e
+set -o pipefail
+
+# Catppuccin Mocha color palette (24-bit true color)
+readonly RED='\033[38;2;243;139;168m'        # #f38ba8 - Errors
+readonly GREEN='\033[38;2;166;227;161m'      # #a6e3a1 - Success/Info
+readonly YELLOW='\033[38;2;249;226;175m'     # #f9e2af - Warnings
+readonly BLUE='\033[38;2;137;180;250m'       # #89b4fa - Info highlights
+readonly MAUVE='\033[38;2;203;166;247m'      # #cba6f7 - Headers
+readonly SAPPHIRE='\033[38;2;116;199;236m'   # #74c7ec - Success highlights
+readonly TEXT='\033[38;2;205;214;244m'       # #cdd6f4 - Normal text
+readonly SUBTEXT='\033[38;2;186;194;222m'    # #bac2de - Subtext
+readonly NC='\033[0m'                         # No Color
+
+# Nerd Font Icons
+readonly CHECK=""
+readonly CROSS=""
+readonly WARN=""
+readonly INFO=""
+readonly ROCKET=""
+readonly FOLDER=""
+readonly QUESTION=""
+readonly DOCKER=""
+
+readonly SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+log_success() {
+    echo -e "${GREEN}${CHECK}  ${NC}$1"
+}
+
+log_error() {
+    echo -e "${RED}${CROSS}  ${NC}$1" >&2
+}
+
+log_warn() {
+    echo -e "${YELLOW}${WARN}  ${NC}$1"
+}
+
+log_info() {
+    echo -e "${BLUE}${INFO}  ${NC}$1"
+}
+
+log_header() {
+    echo -e "${MAUVE}$1${NC}"
+}
+
+prompt() {
+    local prompt_text=$1
+    local default_value=$2
+    local var_name=$3
+
+    if [ -n "$default_value" ]; then
+        echo -e "${BLUE}${QUESTION}  ${TEXT}${prompt_text}${NC} ${SUBTEXT}[${default_value}]${NC}"
+    else
+        echo -e "${BLUE}${QUESTION}  ${TEXT}${prompt_text}${NC}"
+    fi
+
+    echo -n "   > "
+    read -r input
+
+    if [ -z "$input" ] && [ -n "$default_value" ]; then
+        eval "$var_name=\"$default_value\""
+    else
+        eval "$var_name=\"$input\""
+    fi
+}
+
+prompt_yes_no() {
+    local prompt_text=$1
+    local default=$2
+
+    local suffix
+    if [ "$default" = "y" ]; then
+        suffix="${SUBTEXT}[Y/n]${NC}"
+    else
+        suffix="${SUBTEXT}[y/N]${NC}"
+    fi
+
+    echo -e "${BLUE}${QUESTION}  ${TEXT}${prompt_text}${NC} ${suffix}"
+    echo -n "   > "
+    read -r response
+
+    response=${response,,} # to lowercase
+
+    if [ -z "$response" ]; then
+        response=$default
+    fi
+
+    if [[ "$response" =~ ^(y|yes)$ ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+select_scripts() {
+    local -n arr=$1
+
+    log_header "Select scripts to deploy:"
+    echo ""
+
+    local scripts=(
+        "start.sh:Start container"
+        "stop.sh:Stop container"
+        "status.sh:Show container status"
+        "logs.sh:Check logs for errors/warnings"
+        "rebuild.sh:Rebuild container image"
+        "lines.sh:Count lines of code (Rust)"
+        "lint.sh:Lint shell scripts"
+        "fix_nerdfonts.py:Fix Nerd Font icons"
+    )
+
+    echo -e "${TEXT}Available scripts:${NC}"
+    echo ""
+
+    for i in "${!scripts[@]}"; do
+        IFS=':' read -r script desc <<< "${scripts[$i]}"
+        printf "${SUBTEXT}  %d)${NC} %-20s ${SUBTEXT}%s${NC}\n" $((i+1)) "$script" "$desc"
+    done
+
+    echo ""
+    echo -e "${TEXT}Select scripts to deploy:${NC}"
+    echo -e "${SUBTEXT}  - Enter numbers separated by spaces (e.g., 1 2 3)${NC}"
+    echo -e "${SUBTEXT}  - Enter 'all' for all scripts${NC}"
+    echo -e "${SUBTEXT}  - Enter 'core' for core scripts (start, stop, status, logs)${NC}"
+    echo ""
+    echo -n "   > "
+    read -r selection
+
+    arr=()
+
+    if [ "$selection" = "all" ]; then
+        for script_info in "${scripts[@]}"; do
+            IFS=':' read -r script _ <<< "$script_info"
+            arr+=("$script")
+        done
+    elif [ "$selection" = "core" ]; then
+        arr=("start.sh" "stop.sh" "status.sh" "logs.sh")
+    else
+        for num in $selection; do
+            if [[ "$num" =~ ^[0-9]+$ ]] && [ "$num" -ge 1 ] && [ "$num" -le "${#scripts[@]}" ]; then
+                IFS=':' read -r script _ <<< "${scripts[$((num-1))]}"
+                arr+=("$script")
+            fi
+        done
+    fi
+}
+
+customize_script() {
+    local file=$1
+    local container_name=$2
+    local image_name=$3
+    local display_name=$4
+    local dockerfile_path=$5
+
+    # Replace CUSTOMIZE THIS variables
+    sed -i "s/readonly CONTAINER_NAME=\"your-container-name\"/readonly CONTAINER_NAME=\"${container_name}\"/" "$file"
+
+    if grep -q "readonly IMAGE_NAME=" "$file"; then
+        sed -i "s|readonly IMAGE_NAME=\"your-image-name:latest\"|readonly IMAGE_NAME=\"${image_name}\"|" "$file"
+    fi
+
+    if grep -q "readonly DISPLAY_NAME=" "$file"; then
+        sed -i "s/readonly DISPLAY_NAME=\"Your Service\"/readonly DISPLAY_NAME=\"${display_name}\"/" "$file"
+    fi
+
+    if grep -q "readonly DOCKERFILE_PATH=" "$file"; then
+        sed -i "s|readonly DOCKERFILE_PATH=\"./Dockerfile\"|readonly DOCKERFILE_PATH=\"${dockerfile_path}\"|" "$file"
+    fi
+}
+
+main() {
+    echo ""
+    log_header "╔════════════════════════════════════════════════════════════╗"
+    log_header "║                                                            ║"
+    log_header "║         ${ROCKET}  Docker Helper Scripts Deployment             ║"
+    log_header "║                                                            ║"
+    log_header "╚════════════════════════════════════════════════════════════╝"
+    echo ""
+
+    # Collect configuration
+    log_header "Configuration"
+    echo ""
+
+    local target_dir
+    prompt "Target directory for deployment" "." target_dir
+
+    # Expand relative paths
+    if [[ "$target_dir" != /* ]]; then
+        target_dir="$(pwd)/$target_dir"
+    fi
+
+    # Create directory if it doesn't exist
+    if [ ! -d "$target_dir" ]; then
+        if prompt_yes_no "Directory doesn't exist. Create it?" "y"; then
+            mkdir -p "$target_dir"
+            log_success "Directory created: $target_dir"
+        else
+            log_error "Deployment cancelled"
+            exit 1
+        fi
+    fi
+
+    echo ""
+
+    local container_name
+    prompt "Container name" "" container_name
+
+    if [ -z "$container_name" ]; then
+        log_error "Container name is required"
+        exit 1
+    fi
+
+    local image_name
+    prompt "Docker image name" "${container_name}:latest" image_name
+
+    local display_name
+    prompt "Display name for status output" "$container_name" display_name
+
+    local dockerfile_path
+    prompt "Path to Dockerfile" "./Dockerfile" dockerfile_path
+
+    echo ""
+
+    # Select scripts
+    local selected_scripts
+    select_scripts selected_scripts
+
+    if [ ${#selected_scripts[@]} -eq 0 ]; then
+        log_error "No scripts selected"
+        exit 1
+    fi
+
+    echo ""
+    log_header "Summary"
+    echo ""
+    echo -e "${TEXT}Target directory:${NC}  ${SAPPHIRE}${target_dir}${NC}"
+    echo -e "${TEXT}Container name:${NC}    ${SAPPHIRE}${container_name}${NC}"
+    echo -e "${TEXT}Image name:${NC}        ${SAPPHIRE}${image_name}${NC}"
+    echo -e "${TEXT}Display name:${NC}      ${SAPPHIRE}${display_name}${NC}"
+    echo -e "${TEXT}Dockerfile path:${NC}   ${SAPPHIRE}${dockerfile_path}${NC}"
+    echo ""
+    echo -e "${TEXT}Scripts to deploy:${NC}"
+    for script in "${selected_scripts[@]}"; do
+        echo -e "  ${GREEN}${CHECK}${NC}  ${script}"
+    done
+    echo ""
+
+    if ! prompt_yes_no "Deploy these scripts?" "y"; then
+        log_warn "Deployment cancelled"
+        exit 0
+    fi
+
+    echo ""
+    log_header "Deploying..."
+    echo ""
+
+    # Deploy scripts
+    local deployed=0
+    local failed=0
+
+    for script in "${selected_scripts[@]}"; do
+        local source_file="$SCRIPT_DIR/$script"
+        local target_file="$target_dir/$script"
+
+        if [ ! -f "$source_file" ]; then
+            log_error "Source file not found: $script"
+            ((failed++))
+            continue
+        fi
+
+        # Check if file exists
+        if [ -f "$target_file" ]; then
+            if ! prompt_yes_no "  File exists: $script. Overwrite?" "n"; then
+                log_warn "  Skipped: $script"
+                continue
+            fi
+        fi
+
+        # Copy file
+        cp "$source_file" "$target_file"
+
+        # Customize if it's a shell script
+        if [[ "$script" == *.sh ]]; then
+            customize_script "$target_file" "$container_name" "$image_name" "$display_name" "$dockerfile_path"
+        fi
+
+        # Make executable
+        chmod +x "$target_file"
+
+        log_success "  Deployed: $script"
+        ((deployed++))
+    done
+
+    echo ""
+    log_header "Deployment Complete"
+    echo ""
+
+    if [ $deployed -gt 0 ]; then
+        log_success "$deployed script(s) deployed successfully"
+    fi
+
+    if [ $failed -gt 0 ]; then
+        log_error "$failed script(s) failed to deploy"
+    fi
+
+    echo ""
+    log_info "Scripts deployed to: ${SAPPHIRE}${target_dir}${NC}"
+    echo ""
+
+    # Show next steps
+    log_header "Next Steps"
+    echo ""
+    echo -e "${TEXT}1. Review the deployed scripts:${NC}"
+    echo -e "   ${SUBTEXT}cd ${target_dir}${NC}"
+    echo ""
+    echo -e "${TEXT}2. Test the scripts:${NC}"
+    echo -e "   ${SUBTEXT}./status.sh${NC}"
+    echo ""
+    echo -e "${TEXT}3. Customize further if needed${NC}"
+    echo ""
+
+    if printf '%s\n' "${selected_scripts[@]}" | grep -q "rebuild.sh"; then
+        log_warn "Remember to customize the docker run command in rebuild.sh"
+        echo ""
+    fi
+
+    log_success "Deployment complete! ${ROCKET}"
+    echo ""
+}
+
+# Run main
+main "$@"
