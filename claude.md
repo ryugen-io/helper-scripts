@@ -118,10 +118,10 @@ Uses Catppuccin Mocha palette:
 ## Icons
 
 Requires a Nerd Font to display icons correctly. Icons used:
-- ✓ Check
-- ✗ Cross
-- ⚠ Warning
-- ℹ Info
+-  Check
+-  Cross
+-  Warning
+-  Info
 -  Docker
 -  Server
 -  Clock
@@ -297,11 +297,10 @@ readonly MAUVE='\033[38;2;203;166;247m'
 readonly NC='\033[0m'
 
 # Nerd Font Icons
-readonly CHECK=""
-readonly CROSS=""
-readonly WARN=""
-readonly INFO=""
-
+readonly CHECK=""
+readonly CROSS=""
+readonly WARN=""
+readonly INFO=""
 log_success() {
     echo -e "${GREEN}${CHECK}  ${NC}$1"
 }

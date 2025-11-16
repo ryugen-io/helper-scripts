@@ -39,6 +39,21 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Log workflow start
+        run: |
+          source .github/workflows/scripts/ci-logger.sh
+
+          log_header "Claude Code Review Workflow"
+
+          log_info "Event: ${{ github.event_name }}"
+          log_info "Repository: ${{ github.repository }}"
+          log_info "PR: #${{ github.event.pull_request.number }}"
+          log_info "PR Title: ${{ github.event.pull_request.title }}"
+          log_info "PR Author: @${{ github.event.pull_request.user.login }}"
+          log_info "Action: ${{ github.event.action }}"
+
+          log_step "review" "Starting Claude Code Review..."
+
       - name: Run Claude Code Review
         id: claude-review
         uses: anthropics/claude-code-action@v1
@@ -62,4 +77,26 @@ jobs:
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://docs.claude.com/en/docs/claude-code/cli-reference for available options
           claude_args: '--allowed-tools "Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*)"'
+
+      - name: Log workflow completion
+        if: always()
+        run: |
+          source .github/workflows/scripts/ci-logger.sh
+
+          if [ "${{ steps.claude-review.outcome }}" = "success" ]; then
+            log_success "Claude Code Review completed successfully"
+          else
+            log_error "Claude Code Review failed with status: ${{ steps.claude-review.outcome }}"
+          fi
+
+          log_info "Workflow log saved to: ${LOG_FILE}"
+          log_header "${CHECK}  Review workflow complete!"
+
+      - name: Upload workflow logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: claude-review-logs
+          path: .github/workflows/logs/
+          retention-days: 30
 

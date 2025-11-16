@@ -7,6 +7,20 @@ set -o pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 source "$REPO_ROOT/.sys/theme/theme.sh"
+
+# Script configuration
+readonly SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+readonly REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Load environment configuration from .sys/env/.env
+if [ -f "$REPO_ROOT/.sys/env/.env" ]; then
+    # shellcheck disable=SC1090
+    source "$REPO_ROOT/.sys/env/.env"
+fi
+
+# Set defaults if not defined by .env
+SYS_DIR="${SYS_DIR:-.sys}"
+
 # CUSTOMIZE THIS
 readonly CONTAINER_NAME="your-container-name"
 

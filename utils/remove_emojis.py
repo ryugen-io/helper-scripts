@@ -180,6 +180,36 @@ Examples:
         log_error(f"No files found matching types: {', '.join(args.types)}")
         return 1
 
+    # Exclude certain files from processing
+    exclude_patterns = [
+        'remove_emojis.py',      # Don't modify self
+        'fix_nerdfonts.py',      # Don't modify nerd font fixer
+    ]
+
+    filtered_files = []
+    for f in files:
+        should_exclude = False
+        for pattern in exclude_patterns:
+            if pattern.startswith('*'):
+                # Glob pattern
+                if f.match(pattern):
+                    should_exclude = True
+                    break
+            else:
+                # Exact filename match
+                if f.name == pattern:
+                    should_exclude = True
+                    break
+
+        if not should_exclude:
+            filtered_files.append(f)
+
+    files = filtered_files
+
+    if not files:
+        log_error(f"No files remaining after exclusions")
+        return 1
+
     # Header
     tag = f"{Colors.MAUVE}[remove-emojis]{Colors.NC}"
     print(f"\n{tag} {CLEAN}  Removing Unicode emojis from files...\n")
@@ -193,6 +223,7 @@ Examples:
     cleaned_count = 0
     unchanged_count = 0
     total_emojis = 0
+    cleaned_files = []  # Track cleaned files
 
     for filepath in sorted(files):
         changed, emoji_count = remove_emojis_from_file(
@@ -203,6 +234,7 @@ Examples:
         if changed:
             cleaned_count += 1
             total_emojis += emoji_count
+            cleaned_files.append(filepath.name)
             log_success(f"Cleaned {filepath.name} (removed ~{emoji_count} chars)")
             if not args.no_backup:
                 print(f"  {Colors.SUBTEXT}Backup: {filepath.name}.emoji-backup{Colors.NC}")
@@ -222,6 +254,12 @@ Examples:
         log_success("Emoji removal complete!")
         if not args.no_backup:
             log_warn("Review changes before deleting .emoji-backup files!")
+
+        # Show list of cleaned files
+        print(f"\n{Colors.YELLOW}Files cleaned:{Colors.NC}")
+        for filename in cleaned_files:
+            print(f"  {Colors.TEXT}- {filename}{Colors.NC}")
+        print()
     else:
         log_success("No emojis found!")
 

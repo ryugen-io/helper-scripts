@@ -29,7 +29,6 @@ class Icons:
     PLAY = '\uf04b'       #
     HAMMER = '\uf6e3'     #
     CLEAN = '\uf0c2'      #
-    MAGIC = '✨'          # Sparkles (formatter)
     SERVER = '\uf233'     # 󰒋
     CONTAINER = '\uf1b2'  #
     CLOCK = '\uf64f'      # 󰥔
