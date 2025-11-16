@@ -14,9 +14,10 @@ def load_env_config(repo_root: Path) -> dict:
         'SCRIPT_DIRS': 'docker,dev,utils'
     }
 
-    # Try .env first, fallback to .env.example
+    # Try .sys/env/.env first, fallback to .sys/env/.env.example
+    sys_env_dir = repo_root / config['SYS_DIR'] / 'env'
     for env_name in ['.env', '.env.example']:
-        env_file = repo_root / env_name
+        env_file = sys_env_dir / env_name
         if env_file.exists():
             with open(env_file, 'r') as f:
                 for line in f:

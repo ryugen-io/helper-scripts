@@ -34,6 +34,20 @@ log_info() {
     echo -e "${BLUE}  ${NC}$1"
 }
 
+# Script configuration
+readonly SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+readonly REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Set defaults first
+SYS_DIR="${SYS_DIR:-.sys}"
+SCRIPT_DIRS="${SCRIPT_DIRS:-docker,dev,utils}"
+
+# Load environment configuration from .sys/env/.env
+if [ -f "$REPO_ROOT/$SYS_DIR/env/.env" ]; then
+    # shellcheck disable=SC1090
+    source "$REPO_ROOT/$SYS_DIR/env/.env"
+fi
+
 echo -e "${MAUVE}[lint]${NC} Linting shell scripts..."
 echo ""
 
@@ -41,8 +55,15 @@ total_scripts=0
 passed_scripts=0
 total_issues=0
 
-# Check each shell script
-for script in *.sh; do
+# Check each shell script from configured directories
+IFS=',' read -ra DIRS <<< "$SCRIPT_DIRS"
+for dir in "${DIRS[@]}"; do
+    dir=$(echo "$dir" | xargs)  # Trim whitespace
+    if [ ! -d "$REPO_ROOT/$dir" ]; then
+        continue
+    fi
+
+    for script in "$REPO_ROOT/$dir"/*.sh; do
     [ -f "$script" ] || continue
     total_scripts=$((total_scripts + 1))
 
@@ -82,6 +103,52 @@ for script in *.sh; do
     # 6. Check for 'local' in functions (skip - too many false positives)
     # Simple logging functions don't need local variables
     # This check is better handled by the Python linter (shellcheck_test.py)
+
+    if [ $issues -eq 0 ]; then
+        log_success "Passed basic linting"
+        passed_scripts=$((passed_scripts + 1))
+    else
+        log_error "$issues critical issue(s) found"
+        total_issues=$((total_issues + issues))
+    fi
+
+    echo ""
+    done
+done
+
+# Check root scripts
+for script in "$REPO_ROOT"/*.sh; do
+    [ -f "$script" ] || continue
+    total_scripts=$((total_scripts + 1))
+
+    echo -e "${BLUE}Checking ${NC}$script"
+    issues=0
+
+    # 1. Syntax check
+    if ! bash -n "$script" 2>/dev/null; then
+        log_error "Syntax error detected"
+        issues=$((issues + 1))
+    fi
+
+    # 2. Check for set -e or set -o pipefail
+    if ! grep -q "set -e" "$script" && ! grep -q "set -o errexit" "$script"; then
+        log_warn "Missing 'set -e' (consider adding for safety)"
+    fi
+
+    if ! grep -q "set -o pipefail" "$script"; then
+        log_warn "Missing 'set -o pipefail' (consider adding for pipe safety)"
+    fi
+
+    # 3. Check for shebang
+    if ! head -n 1 "$script" | grep -q "^#!"; then
+        log_error "Missing shebang line"
+        issues=$((issues + 1))
+    fi
+
+    # 5. Check executable permission
+    if [ ! -x "$script" ]; then
+        log_warn "Script is not executable (chmod +x $script)"
+    fi
 
     if [ $issues -eq 0 ]; then
         log_success "Passed basic linting"

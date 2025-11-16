@@ -25,6 +25,16 @@ readonly MAGIC="✨"    # Sparkles for formatting
 readonly SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 readonly REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+# Set defaults first
+SYS_DIR="${SYS_DIR:-.sys}"
+SCRIPT_DIRS="${SCRIPT_DIRS:-docker,dev,utils}"
+
+# Load environment configuration from .sys/env/.env
+if [ -f "$REPO_ROOT/$SYS_DIR/env/.env" ]; then
+    # shellcheck disable=SC1090
+    source "$REPO_ROOT/$SYS_DIR/env/.env"
+fi
+
 # shfmt configuration options
 # -i 4: Use 4 spaces for indentation
 # -bn: Binary operators at beginning of line
@@ -115,7 +125,7 @@ main() {
     local failed=0
 
     echo ""
-    log_header "${MAGIC}  Shell Script Formatter (shfmt)"
+    log_header "${MAUVE}[format]${NC} ${MAGIC}  Shell Script Formatter (shfmt)"
     echo ""
 
     # Parse command line arguments
@@ -139,41 +149,28 @@ main() {
     log_header "Formatting Shell Scripts"
     echo ""
 
-    # Format docker directory scripts
-    if [ -d "$REPO_ROOT/docker" ]; then
-        echo -e "${MAUVE}Docker Scripts:${NC}"
-        for script in "$REPO_ROOT"/docker/*.sh; do
-            # Check if file exists (glob might not match anything)
-            if [ -f "$script" ]; then
-                format_file "$script"
-                result=$?
-                # Evaluate return code: 0=formatted, 1=unchanged, 2=failed
-                case $result in
-                    0) ((formatted++)) ;;
-                    1) ((unchanged++)) ;;
-                    2) ((failed++)) ;;
-                esac
-            fi
-        done
-        echo ""
-    fi
-
-    # Format dev directory scripts
-    if [ -d "$REPO_ROOT/dev" ]; then
-        echo -e "${MAUVE}Dev Scripts:${NC}"
-        for script in "$REPO_ROOT"/dev/*.sh; do
-            if [ -f "$script" ]; then
-                format_file "$script"
-                result=$?
-                case $result in
-                    0) ((formatted++)) ;;
-                    1) ((unchanged++)) ;;
-                    2) ((failed++)) ;;
-                esac
-            fi
-        done
-        echo ""
-    fi
+    # Format script directories from configuration
+    IFS=',' read -ra DIRS <<< "$SCRIPT_DIRS"
+    for dir in "${DIRS[@]}"; do
+        dir=$(echo "$dir" | xargs)  # Trim whitespace
+        if [ -d "$REPO_ROOT/$dir" ]; then
+            echo -e "${MAUVE}$(echo ${dir^}) Scripts:${NC}"  # Capitalize first letter
+            for script in "$REPO_ROOT"/"$dir"/*.sh; do
+                # Check if file exists (glob might not match anything)
+                if [ -f "$script" ]; then
+                    format_file "$script"
+                    result=$?
+                    # Evaluate return code: 0=formatted, 1=unchanged, 2=failed
+                    case $result in
+                        0) ((formatted++)) ;;
+                        1) ((unchanged++)) ;;
+                        2) ((failed++)) ;;
+                    esac
+                fi
+            done
+            echo ""
+        fi
+    done
 
     # Format root level scripts (like install.sh)
     echo -e "${MAUVE}Root Scripts:${NC}"

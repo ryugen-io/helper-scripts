@@ -25,6 +25,16 @@ readonly CHART="󰈙"
 readonly SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 readonly REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+# Set defaults first
+SYS_DIR="${SYS_DIR:-.sys}"
+SCRIPT_DIRS="${SCRIPT_DIRS:-docker,dev,utils}"
+
+# Load environment configuration from .sys/env/.env
+if [ -f "$REPO_ROOT/$SYS_DIR/env/.env" ]; then
+    # shellcheck disable=SC1090
+    source "$REPO_ROOT/$SYS_DIR/env/.env"
+fi
+
 # Counters for statistics
 total_files=0
 passed_files=0
@@ -179,23 +189,24 @@ check_file() {
 # Main function
 main() {
     echo ""
-    log_header "${CHART}  Helper Scripts Style Checker"
+    log_header "${MAUVE}[style]${NC} ${CHART}  Helper Scripts Style Checker"
     echo ""
     log_info "Validating coding guidelines and theming consistency"
     echo ""
 
-    # Find all shell scripts
+    # Find all shell scripts from configured directories
     log_header "Checking Shell Scripts"
     echo ""
 
-    # Check docker scripts
-    for script in "$REPO_ROOT"/docker/*.sh; do
-        [ -f "$script" ] && check_file "$script"
-    done
-
-    # Check dev scripts
-    for script in "$REPO_ROOT"/dev/*.sh; do
-        [ -f "$script" ] && check_file "$script"
+    # Check scripts in configured directories
+    IFS=',' read -ra DIRS <<< "$SCRIPT_DIRS"
+    for dir in "${DIRS[@]}"; do
+        dir=$(echo "$dir" | xargs)  # Trim whitespace
+        if [ -d "$REPO_ROOT/$dir" ]; then
+            for script in "$REPO_ROOT"/"$dir"/*.sh; do
+                [ -f "$script" ] && check_file "$script"
+            done
+        fi
     done
 
     # Check root scripts
@@ -203,12 +214,18 @@ main() {
         check_file "$REPO_ROOT/install.sh"
     fi
 
-    # Check Python scripts
+    # Check Python scripts from configured directories
     log_header "Checking Python Scripts"
     echo ""
 
-    for script in "$REPO_ROOT"/utils/*.py; do
-        [ -f "$script" ] && check_file "$script"
+    IFS=',' read -ra DIRS <<< "$SCRIPT_DIRS"
+    for dir in "${DIRS[@]}"; do
+        dir=$(echo "$dir" | xargs)  # Trim whitespace
+        if [ -d "$REPO_ROOT/$dir" ]; then
+            for script in "$REPO_ROOT"/"$dir"/*.py; do
+                [ -f "$script" ] && check_file "$script"
+            done
+        fi
     done
 
     # Print summary
