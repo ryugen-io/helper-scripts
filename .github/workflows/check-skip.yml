@@ -92,7 +92,11 @@ jobs:
 
           if ! git diff --cached --quiet; then
             git commit -m "chore: Add skip-check workflow logs [skip ci]"
-            if git push; then
+
+            # Determine branch name (use head ref for PRs, ref name otherwise)
+            BRANCH_NAME="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
+
+            if git push origin "HEAD:${BRANCH_NAME}"; then
               log_success "Workflow logs committed and pushed to repository"
             else
               log_warn "Push failed, logs may already be up to date"
