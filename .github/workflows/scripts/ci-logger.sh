@@ -9,19 +9,22 @@ readonly LOG_FILE="${LOG_DIR}/$(date +%Y%m%d-%H%M%S)-workflow.log"
 # Ensure log directory exists
 mkdir -p "${LOG_DIR}"
 
-# Icons (simple, GitHub Actions compatible)
-readonly CHECK="✓"
-readonly CROSS="✗"
-readonly WARN="⚠"
-readonly INFO="ℹ"
-readonly ROCKET="🚀"
-readonly HAMMER="🔨"
-readonly MAGIC="✨"
+# Icons from theme.sh (GitHub Actions compatible)
+readonly CHECK=""
+readonly CROSS=""
+readonly WARN=""
+readonly INFO=""
+readonly ROCKET=""
+readonly HAMMER=""
+readonly CLEAN=""
+readonly CHART="󰈙"
+readonly PLAY=""
+readonly FOLDER=""
 
 # Log to both stdout and file with timestamp
 log_to_file() {
     local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-    echo "[${timestamp}] $1" | tee -a "${LOG_FILE}"
+    echo "[${timestamp}] $1" >> "${LOG_FILE}"
 }
 
 # Logging functions with [tag] style
@@ -50,24 +53,22 @@ log_info() {
 }
 
 log_header() {
-    local msg="[workflow] $1"
     echo ""
-    echo "${msg}"
+    echo "[workflow] $1"
     echo ""
-    log_to_file "${msg}"
+    log_to_file "[workflow] $1"
 }
 
 log_step() {
     local tag="$1"
     shift
-    local msg="[${tag}] $*"
     echo ""
-    echo "${msg}"
+    echo "[${tag}] $*"
     echo ""
-    log_to_file "${msg}"
+    log_to_file "[${tag}] $*"
 }
 
 # Export functions and variables
 export -f log_success log_error log_warn log_info log_header log_step log_to_file
 export LOG_FILE LOG_DIR
-export CHECK CROSS WARN INFO ROCKET HAMMER MAGIC
+export CHECK CROSS WARN INFO ROCKET HAMMER CLEAN CHART PLAY FOLDER
