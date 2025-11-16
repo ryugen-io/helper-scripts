@@ -19,6 +19,8 @@ on:
 jobs:
   check-skip:
     uses: ./.github/workflows/check-skip.yml
+    with:
+      workflow_name: "update-readme"
     secrets: inherit
 
   update-readme:

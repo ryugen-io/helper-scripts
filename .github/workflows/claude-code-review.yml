@@ -13,6 +13,8 @@ on:
 jobs:
   check-skip:
     uses: ./.github/workflows/check-skip.yml
+    with:
+      workflow_name: "claude-review"
     secrets: inherit
 
   claude-review:

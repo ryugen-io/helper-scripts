@@ -2,9 +2,15 @@ name: Check Skip File
 
 on:
   workflow_call:
+    inputs:
+      workflow_name:
+        description: "Name of the workflow to check (e.g., 'claude', 'claude-review', 'update-readme')"
+        required: false
+        type: string
+        default: "all"
     outputs:
       should_skip:
-        description: "Whether to skip Claude CI/CD"
+        description: "Whether to skip the workflow"
         value: ${{ jobs.check-skip.outputs.should_skip }}
 
 jobs:
@@ -21,54 +27,130 @@ jobs:
       - name: Check for .skip file
         id: check_skip_file
         env:
-          EXPECTED_SKIP_HASH: ${{ secrets.SKIP_FILE_HASH }}
+          SKIP_HASH_ALL: ${{ secrets.SKIP_FILE_HASH_ALL }}
+          SKIP_HASH_CLAUDE: ${{ secrets.SKIP_FILE_HASH_CLAUDE }}
+          SKIP_HASH_CLAUDE_REVIEW: ${{ secrets.SKIP_FILE_HASH_CLAUDE_REVIEW }}
+          SKIP_HASH_UPDATE_README: ${{ secrets.SKIP_FILE_HASH_UPDATE_README }}
+          WORKFLOW_NAME: ${{ inputs.workflow_name }}
         run: |
           source .github/workflows/scripts/ci-logger.sh
 
           log_header "CI/CD Skip Check"
 
-          SKIP_FILE=".github/skips/.skip"
+          # Function to get the expected content for a skip file type (default fallback)
+          get_expected_content() {
+            local file_type="$1"
+            case "$file_type" in
+              "all")
+                echo "SKIP_ALL"
+                ;;
+              "claude")
+                echo "SKIP_CLAUDE"
+                ;;
+              "claude-review")
+                echo "SKIP_REVIEW"
+                ;;
+              "update-readme")
+                echo "SKIP_README"
+                ;;
+              *)
+                echo ""
+                ;;
+            esac
+          }
 
-          if [ ! -f "$SKIP_FILE" ]; then
-            echo "skip=false" >> $GITHUB_OUTPUT
-            log_success "No skip file found - CI/CD will proceed"
+          # Function to get the expected hash for a skip file type (custom override)
+          get_expected_hash() {
+            local file_type="$1"
+            case "$file_type" in
+              "all")
+                echo "$SKIP_HASH_ALL"
+                ;;
+              "claude")
+                echo "$SKIP_HASH_CLAUDE"
+                ;;
+              "claude-review")
+                echo "$SKIP_HASH_CLAUDE_REVIEW"
+                ;;
+              "update-readme")
+                echo "$SKIP_HASH_UPDATE_README"
+                ;;
+              *)
+                echo ""
+                ;;
+            esac
+          }
+
+          # Function to validate a skip file
+          validate_skip_file() {
+            local skip_file="$1"
+            local file_type="$2"
+
+            if [ ! -f "$skip_file" ]; then
+              return 1
+            fi
+
+            log_info "Checking ${file_type} skip file: ${skip_file}"
+            local skip_hash=$(sha256sum "$skip_file" | awk '{print $1}')
+            local expected_hash=$(get_expected_hash "$file_type")
+            local expected_content=$(get_expected_content "$file_type")
+
+            # If custom hash is configured, check hash
+            if [ -n "$expected_hash" ]; then
+              log_step "verify" "Verifying skip file hash (custom mode)..."
+              if [ "$skip_hash" = "$expected_hash" ]; then
+                log_success "Skip file verified (custom hash match)"
+                log_warn "Workflow '${WORKFLOW_NAME}' will be SKIPPED"
+                return 0
+              else
+                log_error "Skip file hash mismatch!"
+                log_warn "Expected: ${expected_hash}"
+                log_warn "Got:      ${skip_hash}"
+                log_info "Ignoring invalid skip file for security reasons"
+                return 1
+              fi
+            # Otherwise, check default content
+            else
+              log_step "verify" "Verifying skip file content (default mode)..."
+              local skip_content=$(cat "$skip_file" | tr -d '[:space:]')
+              if [ "$skip_content" = "$expected_content" ]; then
+                log_success "Skip file verified (default content match: '${expected_content}')"
+                log_warn "Workflow '${WORKFLOW_NAME}' will be SKIPPED"
+                return 0
+              else
+                log_error "Skip file has invalid content!"
+                log_warn "Expected: '${expected_content}'"
+                log_warn "Got:      '${skip_content}'"
+                log_info "Ignoring invalid skip file for security reasons"
+                log_info "See .github/skips/SKIP_SYSTEM.md for setup instructions"
+                return 1
+              fi
+            fi
+          }
+
+          # Check for global skip file (.skip.all)
+          GLOBAL_SKIP_FILE=".github/skips/.skip.all"
+
+          # Check for workflow-specific skip file (.skip.<workflow_name>)
+          WORKFLOW_SKIP_FILE=".github/skips/.skip.${WORKFLOW_NAME}"
+
+          # Validate global skip file first
+          if validate_skip_file "$GLOBAL_SKIP_FILE" "all"; then
+            echo "skip=true" >> $GITHUB_OUTPUT
             log_info "Workflow log saved to: ${LOG_FILE}"
             exit 0
           fi
 
-          log_info "Skip file found at: ${SKIP_FILE}"
-          SKIP_FILE_HASH=$(sha256sum "$SKIP_FILE" | awk '{print $1}')
-
-          if [ -n "$EXPECTED_SKIP_HASH" ]; then
-            log_step "verify" "Verifying skip file hash..."
-            if [ "$SKIP_FILE_HASH" = "$EXPECTED_SKIP_HASH" ]; then
-              echo "skip=true" >> $GITHUB_OUTPUT
-              log_success "Skip file verified (hash match)"
-              log_warn "CI/CD workflows will be SKIPPED"
-            else
-              echo "skip=false" >> $GITHUB_OUTPUT
-              log_error "Skip file hash mismatch!"
-              log_warn "Expected: ${EXPECTED_SKIP_HASH}"
-              log_warn "Got:      ${SKIP_FILE_HASH}"
-              log_info "Proceeding with CI/CD for security reasons"
-            fi
-          else
-            log_step "verify" "Verifying skip file content (no hash configured)..."
-            SKIP_CONTENT=$(cat "$SKIP_FILE" | tr -d '[:space:]')
-            if [ "$SKIP_CONTENT" = "SKIP_CLAUDE_CI_APPROVED" ]; then
-              echo "skip=true" >> $GITHUB_OUTPUT
-              log_success "Skip file verified (content match)"
-              log_warn "CI/CD workflows will be SKIPPED"
-            else
-              echo "skip=false" >> $GITHUB_OUTPUT
-              log_error "Skip file has invalid content!"
-              log_warn "Expected: 'SKIP_CLAUDE_CI_APPROVED'"
-              log_warn "Got:      '${SKIP_CONTENT}'"
-              log_info "Proceeding with CI/CD for security reasons"
-              log_info "See .github/skips/SKIP_SYSTEM.md for setup instructions"
-            fi
+          # Validate workflow-specific skip file
+          if validate_skip_file "$WORKFLOW_SKIP_FILE" "${WORKFLOW_NAME}"; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            log_info "Workflow log saved to: ${LOG_FILE}"
+            exit 0
           fi
 
+          # No valid skip file found
+          echo "skip=false" >> $GITHUB_OUTPUT
+          log_success "No valid skip file found - workflow will proceed"
           log_info "Workflow log saved to: ${LOG_FILE}"
 
       # Note: Logs are uploaded as artifacts here, but committed by the calling workflow

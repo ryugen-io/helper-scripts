@@ -383,57 +383,104 @@ Automatically updates README.md when scripts change.
 
 Location: `.github/skips/`
 
-The **skip system** provides a secure way to temporarily disable Claude CI/CD workflows.
+The **skip system** provides a secure way to temporarily disable Claude CI/CD workflows with support for **global** and **individual workflow** skipping.
 
-### How It Works
+### Centralized Skip Validation
 
-The system validates `.skip` file content using SHA256 hash verification to prevent accidental or unauthorized skipping.
+All skip logic is centralized in `.github/workflows/check-skip.yml`, which is called by each workflow with its specific name. This eliminates code duplication and provides consistent behavior.
 
-### Two Security Levels
+### Skip File Types
 
-#### 1. Standard Mode (Content-based)
+#### 1. Global Skip File: `.skip.all`
 
-Create `.skip` with exact content:
-```bash
-echo -n "SKIP_CLAUDE_CI_APPROVED" > .github/skips/.skip
-```
+Skips **all** Claude CI/CD workflows:
+- `claude.yml` - Issue/PR comments with @claude
+- `claude-code-review.yml` - Automatic PR reviews
+- `update-readme.yml` - README auto-updates
 
-**Required Hash:** `80960e69edf8e0868c81b3fa9eb415a5421d1e6ac6dc8e3abd640f3dd85c2f3c`
+#### 2. Workflow-Specific Skip Files
 
-#### 2. Enhanced Mode (Secret-based)
+Skip **individual** workflows:
+- `.skip.claude` - Only skip @claude issue/PR comments
+- `.skip.claude-review` - Only skip automatic PR reviews
+- `.skip.update-readme` - Only skip README auto-updates
 
-1. Create custom skip content
-2. Calculate SHA256 hash
-3. Add hash to GitHub Secrets as `SKIP_FILE_HASH`
-4. Commit `.skip` file
+**Priority:** Global skip is checked first, then workflow-specific skip.
+
+### Two Security Modes
+
+#### 1. Default Mode (Content-based)
+
+Each skip file has its own unique default content (no GitHub Secrets required):
+
+| Skip File | Default Content |
+|-----------|----------------|
+| `.skip.all` | `SKIP_ALL` |
+| `.skip.claude` | `SKIP_CLAUDE` |
+| `.skip.claude-review` | `SKIP_REVIEW` |
+| `.skip.update-readme` | `SKIP_README` |
 
 **Example:**
 ```bash
-echo -n "MySecretToken" > .github/skips/.skip
-sha256sum .github/skips/.skip | awk '{print $1}'
-# Add output to GitHub Secrets: SKIP_FILE_HASH
+echo -n "SKIP_ALL" > .github/skips/.skip.all
+```
+
+#### 2. Custom Mode (Hash-based)
+
+Set workflow-specific GitHub Secrets with custom SHA256 hashes:
+
+- `SKIP_FILE_HASH_ALL` - Custom hash for `.skip.all`
+- `SKIP_FILE_HASH_CLAUDE` - Custom hash for `.skip.claude`
+- `SKIP_FILE_HASH_CLAUDE_REVIEW` - Custom hash for `.skip.claude-review`
+- `SKIP_FILE_HASH_UPDATE_README` - Custom hash for `.skip.update-readme`
+
+**Generate custom hashes:**
+```bash
+# Manual method
+echo -n "MySecretToken" > .github/skips/.skip.claude
+sha256sum .github/skips/.skip.claude | awk '{print $1}'
+# Add output to GitHub Secrets: SKIP_FILE_HASH_CLAUDE
+
+# Or use the helper script (recommended)
+python3 .github/skips/generate_skip_hash.py
+```
+
+### Quick Usage Examples
+
+**Skip all workflows:**
+```bash
+cp .github/skips/.skip.all.example .github/skips/.skip.all
+git add .github/skips/.skip.all
+git commit -m "Skip all Claude workflows"
+git push
+```
+
+**Skip only @claude comments:**
+```bash
+cp .github/skips/.skip.claude.example .github/skips/.skip.claude
+git add .github/skips/.skip.claude
+git commit -m "Skip only @claude comments"
+git push
+```
+
+**Re-enable specific workflow:**
+```bash
+rm .github/skips/.skip.claude
+git add .github/skips/.skip.claude
+git commit -m "Re-enable @claude comments"
+git push
 ```
 
 ### Security Features
 
-- **Hash Validation**: Not every `.skip` file is accepted
-- **Fallback Logic**: Invalid `.skip` files are ignored (CI continues)
+- **Hash Validation**: Not every skip file is accepted
+- **Centralized Logic**: All validation in one place (no code duplication)
+- **Fallback Logic**: Invalid skip files are ignored (CI continues)
 - **Audit Trail**: All skip attempts logged in workflow logs
 - **Flexibility**: Supports both simple and custom modes
+- **Granular Control**: Skip all workflows or individual ones
 
-### Affected Workflows
-
-- `claude.yml` - Issue/PR comments with @claude
-- `claude-code-review.yml` - Automatic PR reviews
-
-### Re-enabling Claude CI/CD
-
-```bash
-rm .github/skips/.skip
-git add .github/skips/.skip
-git commit -m "Re-enable Claude CI/CD"
-git push
-```
+**For detailed documentation, see:** `.github/skips/SKIP_SYSTEM.md`
 
 ---
 
