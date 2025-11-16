@@ -1,6 +1,0 @@
-[2025-11-16 20:23:53] [workflow] README Update Workflow
-[2025-11-16 20:23:53] [readme] Generating README from scripts...
-[2025-11-16 20:23:54] [success]   README generated successfully
-[2025-11-16 20:23:54] [check] Checking for changes...
-[2025-11-16 20:23:54] [info]   Changes detected in README.md
-[2025-11-16 20:23:54] [info]   Workflow log saved to: .github/logs/20251116-202353-workflow.log
