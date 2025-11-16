@@ -115,12 +115,14 @@ def fix_icons_in_file(filepath: Path, dry_run: bool = False) -> bool:
         # Pattern to match: readonly ICON_NAME=""
         # We'll replace the empty string with the actual icon
         for icon_name, icon_char in NERD_FONTS.items():
-            # Match patterns like: readonly CHECK=""
+            # Match patterns like: readonly CHECK=""
+            # Updated patterns to handle variable whitespace around =
             # Pattern 1: With readonly (shell scripts)
-            pattern1 = rf'(readonly\s+{icon_name}=)""\s*$'
+            pattern1 = rf'(readonly\s+{icon_name})\s*=\s*""\s*$'
             # Pattern 2: Without readonly (YAML, other formats)
-            pattern2 = rf'({icon_name}=)""\s*$'
-            replacement = rf'\1"{icon_char}"'
+            pattern2 = rf'({icon_name})\s*=\s*""\s*$'
+            # Replacement with normalized spacing (no spaces around =)
+            replacement = rf'\1="{icon_char}"'
 
             # Try pattern 1 first (with readonly)
             new_content = re.sub(pattern1, replacement, content, flags=re.MULTILINE)
@@ -136,6 +138,32 @@ def fix_icons_in_file(filepath: Path, dry_run: bool = False) -> bool:
                 else:
                     log_warn(f"Would fix {icon_name} in {filepath.name}")
                 content = new_content
+
+        # Normalize whitespace after icon fixes
+        if changes_made:
+            lines = content.split('\n')
+            normalized_lines = []
+
+            for line in lines:
+                # Preserve leading whitespace (indentation)
+                leading_ws = ''
+                stripped = line.lstrip()
+                if stripped != line:
+                    leading_ws = line[:len(line) - len(stripped)]
+
+                # Normalize multiple spaces to single space in content
+                # But preserve spaces inside quoted strings
+                if '"' not in stripped and "'" not in stripped:
+                    # No quotes - safe to normalize
+                    normalized = re.sub(r' {2,}', ' ', stripped)
+                else:
+                    # Has quotes - only normalize outside of quoted regions
+                    # Simple approach: don't normalize to avoid breaking strings
+                    normalized = stripped
+
+                normalized_lines.append(leading_ws + normalized)
+
+            content = '\n'.join(normalized_lines)
 
         if changes_made and not dry_run:
             filepath.write_text(content, encoding='utf-8')

@@ -31,7 +31,7 @@ def remove_emojis(text: str) -> str:
         text: Input text containing emojis
 
     Returns:
-        Text with emojis removed
+        Text with emojis removed and whitespace normalized
     """
     # Emoji ranges to remove (preserves Nerd Font PUA ranges)
     emoji_pattern = re.compile(
@@ -60,7 +60,28 @@ def remove_emojis(text: str) -> str:
         flags=re.UNICODE
     )
 
-    return emoji_pattern.sub('', text)
+    # Remove emojis
+    text = emoji_pattern.sub('', text)
+
+    # Normalize whitespace: replace multiple spaces with single space
+    # BUT preserve indentation at start of lines
+    lines = text.split('\n')
+    normalized_lines = []
+
+    for line in lines:
+        # Get leading whitespace (indentation)
+        leading_ws = ''
+        stripped = line.lstrip()
+        if stripped != line:
+            leading_ws = line[:len(line) - len(stripped)]
+
+        # Normalize spaces in the rest of the line (multiple spaces → single)
+        normalized = re.sub(r' {2,}', ' ', stripped)
+
+        # Recombine
+        normalized_lines.append(leading_ws + normalized)
+
+    return '\n'.join(normalized_lines)
 
 def remove_emojis_from_file(filepath: Path, keep_backup: bool = True) -> Tuple[bool, int]:
     """
