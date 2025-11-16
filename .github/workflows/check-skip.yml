@@ -10,6 +10,8 @@ on:
 jobs:
   check-skip:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     outputs:
       should_skip: ${{ steps.check_skip_file.outputs.skip }}
     steps:
