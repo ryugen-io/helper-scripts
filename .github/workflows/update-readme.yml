@@ -91,7 +91,7 @@ jobs:
           fi
 
           log_step "push" "${ROCKET}  Pushing to remote..."
-          if git push; then
+          if git push origin HEAD:${GITHUB_REF_NAME}; then
             log_success "Changes pushed successfully"
           else
             log_error "Failed to push changes"
@@ -121,7 +121,7 @@ jobs:
 
           if ! git diff --cached --quiet; then
             git commit -m "chore: Add update-readme workflow logs [skip ci]"
-            if git push; then
+            if git push origin HEAD:${GITHUB_REF_NAME}; then
               log_success "Workflow logs committed and pushed to repository"
             else
               log_warn "Push failed, logs may already be up to date"
