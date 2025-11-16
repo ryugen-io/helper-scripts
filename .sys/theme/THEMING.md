@@ -196,11 +196,10 @@ readonly MAUVE='\033[38;2;203;166;247m'
 readonly NC='\033[0m'
 
 # Nerd Font Icons
-readonly CHECK=""
-readonly CROSS=""
-readonly WARN=""
-readonly INFO=""
-
+readonly CHECK=""
+readonly CROSS=""
+readonly WARN=""
+readonly INFO=""
 log_success() {
     echo -e "${GREEN}${CHECK}  ${NC}$1"
 }
