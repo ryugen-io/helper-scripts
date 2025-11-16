@@ -17,15 +17,15 @@ on:
       - '!.github/workflows/update-readme.yml'
 
 jobs:
-  check-skip:
+  validation:
     uses: ./.github/workflows/check-skip.yml
     with:
       workflow_name: "update-readme"
     secrets: inherit
 
   update-readme:
-    needs: check-skip
-    if: needs.check-skip.outputs.should_skip != 'true'
+    needs: validation
+    if: needs.validation.outputs.should_skip != 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write

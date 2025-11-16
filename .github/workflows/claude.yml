@@ -11,16 +11,16 @@ on:
     types: [submitted]
 
 jobs:
-  check-skip:
+  validation:
     uses: ./.github/workflows/check-skip.yml
     with:
       workflow_name: "claude"
     secrets: inherit
 
   claude:
-    needs: check-skip
+    needs: validation
     if: |
-      needs.check-skip.outputs.should_skip != 'true' && (
+      needs.validation.outputs.should_skip != 'true' && (
         (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
         (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
         (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
@@ -106,7 +106,7 @@ jobs:
 
   # This job always runs to persist logs, even when claude is skipped
   persist-logs:
-    needs: [check-skip, claude]
+    needs: [validation, claude]
     if: always()
     runs-on: ubuntu-latest
     permissions:

@@ -11,10 +11,10 @@ on:
     outputs:
       should_skip:
         description: "Whether to skip the workflow"
-        value: ${{ jobs.check-skip.outputs.should_skip }}
+        value: ${{ jobs.validation.outputs.should_skip }}
 
 jobs:
-  check-skip:
+  validation:
     runs-on: ubuntu-latest
     outputs:
       should_skip: ${{ steps.check_skip_file.outputs.skip }}

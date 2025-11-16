@@ -11,18 +11,18 @@ on:
     #   - "src/**/*.jsx"
 
 jobs:
-  check-skip:
+  validation:
     uses: ./.github/workflows/check-skip.yml
     with:
       workflow_name: "claude-review"
     secrets: inherit
 
   claude-review:
-    needs: check-skip
-    if: needs.check-skip.outputs.should_skip != 'true'
+    needs: validation
+    if: needs.validation.outputs.should_skip != 'true'
     # Optional: Filter by PR author - add to the if condition above if needed:
     # if: |
-    #   needs.check-skip.outputs.should_skip != 'true' && (
+    #   needs.validation.outputs.should_skip != 'true' && (
     #     github.event.pull_request.user.login == 'external-contributor' ||
     #     github.event.pull_request.user.login == 'new-developer' ||
     #     github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
