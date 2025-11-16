@@ -123,6 +123,15 @@ Examples:
 
   # Fix multiple file types
   python3 fix_nerdfonts.py sh md py
+
+  # Fix files in a specific directory
+  python3 fix_nerdfonts.py --path /path/to/scripts
+
+  # Fix files recursively
+  python3 fix_nerdfonts.py --recursive --path /path/to/scripts
+
+  # Fix a specific file
+  python3 fix_nerdfonts.py --path /path/to/script.sh
         '''
     )
 
@@ -132,25 +141,49 @@ Examples:
         help='File types to fix (e.g., sh md py txt). Default: sh'
     )
 
+    parser.add_argument(
+        '-p', '--path',
+        type=str,
+        help='Path to file or directory to process. Default: current directory'
+    )
+
+    parser.add_argument(
+        '-r', '--recursive',
+        action='store_true',
+        help='Search recursively in subdirectories'
+    )
+
     args = parser.parse_args()
+
+    # Determine base path
+    base_path = Path(args.path) if args.path else Path('.')
 
     # Determine which files to process
     files = []
 
-    if not args.filetypes:
-        # Default: scan .sh files
-        files = list(Path('.').glob('*.sh'))
+    # Check if base_path is a specific file
+    if base_path.is_file():
+        files.append(base_path)
+    elif base_path.is_dir():
+        if not args.filetypes:
+            # Default: scan .sh files
+            pattern = '**/*.sh' if args.recursive else '*.sh'
+            files = list(base_path.glob(pattern))
+        else:
+            # Check if arguments are files or file types
+            for arg in args.filetypes:
+                arg_path = Path(arg)
+                if arg_path.exists() and arg_path.is_file():
+                    # It's a specific file
+                    files.append(arg_path)
+                else:
+                    # It's a file type - scan for files with this extension
+                    ext = arg.lstrip('*.')
+                    pattern = f'**/*.{ext}' if args.recursive else f'*.{ext}'
+                    files.extend(list(base_path.glob(pattern)))
     else:
-        # Check if arguments are files or file types
-        for arg in args.filetypes:
-            arg_path = Path(arg)
-            if arg_path.exists() and arg_path.is_file():
-                # It's a specific file
-                files.append(arg_path)
-            else:
-                # It's a file type - scan for files with this extension
-                pattern = f'*.{arg}' if not arg.startswith('*.') else arg
-                files.extend(list(Path('.').glob(pattern)))
+        log_error(f"Path not found: {base_path}")
+        return 1
 
     if not files:
         if args.filetypes:

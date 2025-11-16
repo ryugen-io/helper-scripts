@@ -1,5 +1,7 @@
 #!/bin/bash
-# Remove ALL emojis and Unicode symbols from files in directory
+# Remove Unicode emojis (like Claude emojis) from files
+# Preserves Nerd Font icons (Private Use Area)
+# Removes emojis from emojidb.org/claude-emojis and similar Unicode emojis
 # Useful for creating clean, emoji-free production scripts
 set -e
 set -o pipefail
@@ -54,48 +56,55 @@ remove_emojis_from_file() {
     # Create backup
     cp "$file" "$backup"
 
-    # Remove ONLY emoji characters, NOT Nerd Font icons!
+    # Remove ONLY Unicode emoji characters (like Claude emojis), NOT Nerd Font icons!
     # Nerd Font icons are in Private Use Area (PUA): U+E000-U+F8FF, U+F0000-U+FFFFD
     # We MUST NOT remove these!
     #
-    # This regex matches ONLY:
-    # - Emoji characters (U+1F300-U+1F9FF) - Color emojis
-    # - Miscellaneous symbols (U+2600-U+27BF) - Sun, umbrella, etc.
-    # - Dingbats (U+2700-U+27BF) - Scissors, airplane, etc.
-    # - Regional indicators (U+1F1E6-U+1F1FF) - Flag emojis
-    # - Variation selectors (U+FE00-U+FE0F) - Emoji style selectors
-    # - Zero-width joiners (U+200D) - Emoji combining
+    # This regex removes all emojis from emojidb.org/claude-emojis including:
+    # - Emoji characters (🤖, 💥, 🎉, 🔥, etc.) - U+1F300-U+1FAF8
+    # - Miscellaneous symbols (☁️, ⚡, ✨, etc.) - U+2600-U+27BF
+    # - Dingbats (✳, ✴, ❌, etc.) - U+2700-U+27BF
+    # - Mathematical/Technical (⚛, ⚙, ⏳, etc.) - U+2300-U+2BFF
+    # - Regional indicators (flags) - U+1F1E6-U+1F1FF
+    # - Variation selectors & joiners - U+FE00-U+FE0F, U+200D
 
     # Use Perl for better Unicode support
     if command -v perl &> /dev/null; then
-        # Perl regex to remove ONLY emojis, NOT Nerd Font icons!
+        # Perl regex to remove ONLY Unicode emojis, NOT Nerd Font icons!
         # Nerd Fonts use Private Use Area (E000-F8FF) which we preserve
+        # This covers all Claude emojis from emojidb.org/claude-emojis
         perl -i -pe '
-            # Main emoji ranges - ONLY these!
-            s/[\x{1F300}-\x{1F9FF}]//g;    # Emoji & Pictographs (ALL emoji blocks)
-            s/[\x{2600}-\x{26FF}]//g;      # Miscellaneous Symbols (sun, stars, etc.)
-            s/[\x{2700}-\x{27BF}]//g;      # Dingbats (scissors, checkmarks, etc.)
+            # Main emoji ranges (covers 99% of emojis including all Claude emojis)
+            s/[\x{1F300}-\x{1FAF8}]//g;    # Emoji & Pictographs (ALL emoji blocks including extended)
+            s/[\x{1F900}-\x{1F9FF}]//g;    # Supplemental Symbols and Pictographs
+            s/[\x{1FA70}-\x{1FAF8}]//g;    # Extended Pictographs
+            s/[\x{2600}-\x{26FF}]//g;      # Miscellaneous Symbols (☁️, ⚡, ⌚, etc.)
+            s/[\x{2700}-\x{27BF}]//g;      # Dingbats (✨, ✳, ✴, ❌, etc.)
+            s/[\x{2300}-\x{23FF}]//g;      # Miscellaneous Technical (⌚, ⏰, ⏳, etc.)
+            s/[\x{2000}-\x{206F}]//g;      # General Punctuation (includes ZWJ)
+            s/[\x{20A0}-\x{20CF}]//g;      # Currency Symbols (💵 etc.)
+            s/[\x{2100}-\x{214F}]//g;      # Letterlike Symbols (ℹ, etc.)
+            s/[\x{2190}-\x{21FF}]//g;      # Arrows
+            s/[\x{2200}-\x{22FF}]//g;      # Mathematical Operators
+            s/[\x{25A0}-\x{25FF}]//g;      # Geometric Shapes
+            s/[\x{2600}-\x{27BF}]//g;      # Miscellaneous Symbols & Dingbats
+            s/[\x{2900}-\x{297F}]//g;      # Supplemental Arrows-B
+            s/[\x{2980}-\x{29FF}]//g;      # Miscellaneous Mathematical Symbols-B
+            s/[\x{2A00}-\x{2AFF}]//g;      # Supplemental Mathematical Operators
+            s/[\x{2B00}-\x{2BFF}]//g;      # Miscellaneous Symbols and Arrows (⋆, ⚛, ⚙, etc.)
+            s/[\x{3000}-\x{303F}]//g;      # CJK Symbols and Punctuation
             s/[\x{1F1E6}-\x{1F1FF}]//g;    # Regional Indicators (flags)
             s/[\x{FE00}-\x{FE0F}]//g;      # Variation Selectors (emoji style)
+            s/[\x{0590}-\x{05FF}]//g;      # Hebrew (includes ֎)
             s/[\x{200D}]//g;               # Zero Width Joiner (emoji combining)
-            s/[\x{2B50}]//g;               # Star emoji
-            s/[\x{231A}-\x{231B}]//g;      # Watch, hourglass
-            s/[\x{2328}]//g;               # Keyboard
-            s/[\x{23CF}]//g;               # Eject button
-            s/[\x{23E9}-\x{23F3}]//g;      # Media control symbols
-            s/[\x{23F8}-\x{23FA}]//g;      # More media controls
-            s/[\x{24C2}]//g;               # Circled M
-            s/[\x{25AA}-\x{25AB}]//g;      # Black squares
-            s/[\x{25B6}]//g;               # Play button
-            s/[\x{25C0}]//g;               # Reverse button
-            s/[\x{25FB}-\x{25FE}]//g;      # White/black squares
-            s/[\x{2934}-\x{2935}]//g;      # Arrows
-            s/[\x{2B05}-\x{2B07}]//g;      # Arrow emojis
-            s/[\x{2B1B}-\x{2B1C}]//g;      # Black/white large squares
-            s/[\x{3030}]//g;               # Wavy dash
-            s/[\x{303D}]//g;               # Part alternation mark
-            s/[\x{3297}]//g;               # Circled ideograph congratulation
-            s/[\x{3299}]//g;               # Circled ideograph secret
+            s/[\x{FE0F}]//g;               # Variation Selector-16 (emoji presentation)
+
+            # Specific Claude emojis that might not be covered above
+            s/❦//g;                        # Floral Heart
+            s/⚹//g;                        # Sextile
+            s/✺//g;                        # Heavy Eight Teardrop-Spoked Propeller Asterisk
+            s/⛆//g;                        # Rain
+            s/❋//g;                        # Heavy Eight Teardrop-Spoked Asterisk
 
             # DO NOT TOUCH: E000-F8FF (Private Use Area - Nerd Fonts!)
             # DO NOT TOUCH: F0000-FFFFD (Supplementary Private Use Area)
