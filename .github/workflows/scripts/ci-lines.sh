@@ -1,6 +1,7 @@
 #!/bin/bash
 # CI Line Counter - Count lines in changed files
 # Analyzes shell scripts, Python, and YAML files with clean logging
+# STYLECHECK_IGNORE - CI workflow script, different standards
 
 set -e
 set -o pipefail

@@ -2,6 +2,8 @@
 """
 Interactive script to generate custom skip file hashes for Claude CI/CD workflows.
 Uses Catppuccin Mocha theming for consistent visual output.
+
+STYLECHECK_IGNORE - GitHub workflow utility, managed separately
 """
 
 import sys
