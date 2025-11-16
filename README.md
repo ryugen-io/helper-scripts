@@ -19,6 +19,7 @@
 - [dev/shellcheck.py](dev/shellcheck.py)
 - [dev/test.bats](dev/test.bats)
 - [dev/test.py](dev/test.py)
+- [dev/venv.py](dev/venv.py)
 - [docker/logs.py](docker/logs.py)
 - [docker/rebuild.py](docker/rebuild.py)
 - [docker/start.py](docker/start.py)
