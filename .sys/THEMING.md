@@ -125,6 +125,47 @@ def log_info(msg: str):
     print(f"{Colors.BLUE}{INFO}  {Colors.NC}{msg}")
 ```
 
+## Output Design Guidelines
+
+**WICHTIG: Halte Output CLEAN und SIMPEL**
+
+### Was NICHT zu tun ist
+
+- **KEINE Separator-Linien** wie `==================== Title ====================`
+- **KEINE Unicode Emojis** (wie „", „", „") - nur Nerd Font Icons!
+- **KEINE übermäßigen Leerzeilen** oder Whitespace
+- **KEINE verbose Erklärungen** - kurz und präzise
+
+### Korrekte Output-Formatierung
+
+```bash
+# Gut - Clean und simpel
+echo -e "${GREEN}${CHECK}${NC}  No skip file - proceeding with CI/CD"
+echo -e "${BLUE}${INFO}${NC}  Checking configuration..."
+echo -e "${YELLOW}${WARN}${NC}  Skip file invalid - proceeding for security"
+
+# Schlecht - Übertrieben und verbose
+echo -e "${MAUVE}==================== Title ====================${NC}"
+echo ""
+echo -e "${BLUE}${INFO}${NC}  Detailed explanation of what we're doing..."
+echo -e "${BLUE}${INFO}${NC}  More detailed information..."
+echo ""
+echo -e "${MAUVE}=================================================${NC}"
+```
+
+### Format-Regel
+
+Alle Ausgaben folgen dem Format:
+```
+<COLOR><ICON><NC>  <Message>
+```
+
+- Ein Icon
+- Zwei Leerzeichen nach dem Icon
+- Kurze, aussagekräftige Nachricht
+- Keine Punkt am Ende bei Einzeilern
+- Keine zusätzlichen Dekorationen
+
 ## Best Practices
 
 1. **Konsistenz**: Verwende immer die gleichen Farben für die gleichen Zwecke
@@ -132,6 +173,7 @@ def log_info(msg: str):
 3. **Error Handling**: Fehler immer nach stderr (`>&2`)
 4. **Reset**: Verwende immer `${NC}` am Ende von farbigen Texten
 5. **Headers**: Format `[script-name]` in MAUVE für alle Scripts
+6. **Clean Output**: Keine separator Linien, keine Emojis, keine verbose Texte
 
 ## Terminal Requirements
 
