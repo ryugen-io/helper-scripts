@@ -112,9 +112,20 @@ class StyleChecker:
                     issues += 1
                     self.warnings += 1
 
+            # Check for .env integration
+            if '.sys/env/.env' not in content and 'source "$REPO_ROOT/.sys/env/.env"' not in content:
+                log_warn("    Missing .env integration (.sys/env/.env)")
+                self.warnings += 1
+
             # Check for description comment on line 2
             if len(lines) > 1 and not lines[1].startswith('#'):
                 log_warn("    Missing description comment on line 2")
+                self.warnings += 1
+
+        if filepath.suffix == '.py':
+            # Check for .env integration in Python scripts
+            if 'load_env()' not in content and '.sys/env/.env' not in content:
+                log_warn("    Missing .env integration (load_env function)")
                 self.warnings += 1
 
         return issues
