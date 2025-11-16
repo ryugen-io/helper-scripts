@@ -26,15 +26,15 @@ readonly QUESTION=""
 readonly DOCKER=""
 readonly SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-# Load environment configuration
-if [ -f "$SCRIPT_DIR/.env" ]; then
-    # shellcheck disable=SC1091
-    source "$SCRIPT_DIR/.env"
-fi
-
-# Set defaults if not defined in .env
+# Set defaults first
 SYS_DIR="${SYS_DIR:-.sys}"
 GITHUB_DIR="${GITHUB_DIR:-.github}"
+
+# Load environment configuration from .sys/env/.env
+if [ -f "$SCRIPT_DIR/$SYS_DIR/env/.env" ]; then
+    # shellcheck disable=SC1091
+    source "$SCRIPT_DIR/$SYS_DIR/env/.env"
+fi
 
 log_success() {
     echo -e "${GREEN}${CHECK}  ${NC}$1"
