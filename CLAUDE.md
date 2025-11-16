@@ -470,10 +470,10 @@ Interactive script for deploying helper scripts to other projects.
 ### Template Variables (Auto-Replaced)
 
 ```bash
-readonly CONTAINER_NAME="your-container-name"      → User's container name
-readonly IMAGE_NAME="your-image-name:latest"       → User's image name
-readonly DISPLAY_NAME="Your Service"               → User's display name
-readonly DOCKERFILE_PATH="./Dockerfile"            → User's Dockerfile path
+readonly CONTAINER_NAME="your-container-name"       User's container name
+readonly IMAGE_NAME="your-image-name:latest"        User's image name
+readonly DISPLAY_NAME="Your Service"                User's display name
+readonly DOCKERFILE_PATH="./Dockerfile"             User's Dockerfile path
 ```
 
 ### Usage
@@ -530,9 +530,9 @@ readonly DOCKERFILE_PATH="./Dockerfile"            → User's Dockerfile path
 ### When Creating New Scripts
 
 1. **Add script to appropriate directory**:
-   - Docker management → `docker/`
-   - Development tools → `dev/`
-   - Utilities → `utils/`
+   - Docker management  `docker/`
+   - Development tools  `dev/`
+   - Utilities  `utils/`
 
 2. **Include descriptive comment on line 2**:
    ```bash
