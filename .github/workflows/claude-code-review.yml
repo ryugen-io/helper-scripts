@@ -96,7 +96,7 @@ jobs:
 
       - name: Upload workflow logs
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
           name: claude-review-logs
           path: .github/workflows/logs/
@@ -104,7 +104,7 @@ jobs:
 
       - name: Download skip-check logs
         if: always()
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v4
         continue-on-error: true
         with:
           name: skip-check-logs
@@ -112,7 +112,7 @@ jobs:
 
       - name: Download workflow logs
         if: always()
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v4
         continue-on-error: true
         with:
           name: claude-review-logs
