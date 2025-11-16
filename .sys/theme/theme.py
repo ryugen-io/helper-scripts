@@ -2,6 +2,7 @@
 Central Theming Module for Python Scripts
 Catppuccin Mocha color palette with Nerd Font icons
 STYLECHECK_IGNORE - Python module, no shebang needed
+PYLINTCHECK_IGNORE - Theme module, different formatting standards
 """
 
 # Catppuccin Mocha color palette (24-bit true color)

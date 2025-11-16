@@ -135,6 +135,20 @@ def lint_file(filepath: Path, tools: List[str]) -> Tuple[bool, int]:
         return False, issues
 
 
+def has_ignore_marker(filepath: Path) -> bool:
+    """Check if file contains PYLINTCHECK_IGNORE marker"""
+    try:
+        with open(filepath, 'r') as f:
+            for i, line in enumerate(f):
+                if i >= 10:
+                    break
+                if 'PYLINTCHECK_IGNORE' in line:
+                    return True
+        return False
+    except Exception:
+        return False
+
+
 def scan_files(base_path: Path, recursive: bool) -> List[Path]:
     """Scan for Python files"""
     files = []
@@ -241,6 +255,11 @@ Available tools: flake8, pylint, mypy
     total_issues = 0
 
     for filepath in files:
+        if has_ignore_marker(filepath):
+            print(f"{Colors.SUBTEXT}Skipping: {Colors.YELLOW}{filepath.name}{Colors.NC} {Colors.SUBTEXT}(PYLINTCHECK_IGNORE){Colors.NC}")
+            print()
+            continue
+
         passed, issues = lint_file(filepath, available_tools)
         total_files += 1
         if passed:
