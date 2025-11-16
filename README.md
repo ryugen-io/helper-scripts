@@ -22,7 +22,7 @@
 - [docker/start.sh](docker/start.sh)
 - [docker/status.sh](docker/status.sh)
 - [docker/stop.sh](docker/stop.sh)
-- [install.sh](install.sh)
+- [install.py](install.py)
 - [temp.sh](temp.sh)
 - [utils/fix_nerdfonts.py](utils/fix_nerdfonts.py)
 - [utils/remove_emojis.py](utils/remove_emojis.py)
