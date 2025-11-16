@@ -26,6 +26,16 @@ readonly QUESTION=""
 readonly DOCKER=""
 readonly SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
+# Load environment configuration
+if [ -f "$SCRIPT_DIR/.env" ]; then
+    # shellcheck disable=SC1091
+    source "$SCRIPT_DIR/.env"
+fi
+
+# Set defaults if not defined in .env
+SYS_DIR="${SYS_DIR:-.sys}"
+GITHUB_DIR="${GITHUB_DIR:-.github}"
+
 log_success() {
     echo -e "${GREEN}${CHECK}  ${NC}$1"
 }
@@ -313,12 +323,12 @@ main() {
 
     # Deploy theme.sh first (always needed)
     log_info "Deploying theme.sh (required for all scripts)..."
-    if [ -f "$SCRIPT_DIR/theme.sh" ]; then
-        cp "$SCRIPT_DIR/theme.sh" "$target_dir/theme.sh"
+    if [ -f "$SCRIPT_DIR/$SYS_DIR/theme.sh" ]; then
+        cp "$SCRIPT_DIR/$SYS_DIR/theme.sh" "$target_dir/theme.sh"
         chmod +x "$target_dir/theme.sh"
         log_success "  Deployed: theme.sh"
     else
-        log_warn "  theme.sh not found - scripts will use inline colors"
+        log_warn "  theme.sh not found in $SYS_DIR - scripts will use inline colors"
     fi
     echo ""
 
