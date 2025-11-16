@@ -26,9 +26,10 @@ The script will:
 
 ## Scripts
 
-### Installation
+### Core
 
 - **install.sh** - Interactive installation script for deploying scripts to projects
+- **theme.sh** - Centralized Catppuccin Mocha colors and Nerd Font icons (source in scripts)
 
 ### Docker Container Management
 

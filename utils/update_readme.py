@@ -35,6 +35,7 @@ DESCRIPTIONS = {
     'utils/update_readme.py': 'Dynamically generate README.md based on repository contents',
     'utils/remove_emojis.sh': 'Remove all emojis and Unicode symbols from files',
     'install.sh': 'Interactive installation script for deploying scripts to projects',
+    'theme.sh': 'Centralized Catppuccin Mocha colors and Nerd Font icons (source in scripts)',
 }
 
 # Category titles
@@ -42,7 +43,7 @@ CATEGORIES = {
     'docker': 'Docker Container Management',
     'dev': 'Development Tools',
     'utils': 'Utilities',
-    'root': 'Installation',
+    'root': 'Core',
 }
 
 def scan_scripts() -> Dict[str, List[str]]:
@@ -65,7 +66,7 @@ def scan_scripts() -> Dict[str, List[str]]:
 
     # Check for root level scripts
     for file in sorted(repo_root.iterdir()):
-        if file.is_file() and file.name == 'install.sh':
+        if file.is_file() and file.name in ['install.sh', 'theme.sh']:
             scripts_by_category['root'].append(file.name)
 
     return scripts_by_category
