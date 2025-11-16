@@ -54,11 +54,29 @@ def check_pipefail(filepath: Path) -> bool:
         return False
 
 
+def should_ignore(filepath: Path) -> bool:
+    """Check if file contains LINTCHECK_IGNORE marker"""
+    try:
+        content = filepath.read_text(encoding='utf-8')
+        # Check first 10 lines for the marker
+        for line in content.split('\n')[:10]:
+            if 'LINTCHECK_IGNORE' in line:
+                return True
+    except Exception:
+        pass
+    return False
+
+
 def lint_file(filepath: Path) -> Tuple[bool, int]:
     """
     Lint a single shell script
     Returns: (passed, critical_issues)
     """
+    # Skip ignored files
+    if should_ignore(filepath):
+        print(f"{Colors.SUBTEXT}Skipping: {Colors.YELLOW}{filepath.name}{Colors.NC} {Colors.SUBTEXT}(ignored){Colors.NC}")
+        return True, 0
+
     issues = 0
 
     print(f"{Colors.BLUE}Checking {Colors.NC}{filepath}")

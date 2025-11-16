@@ -2,6 +2,7 @@
 # Catppuccin Mocha Theme - Centralized color and icon definitions
 # Source this file in your scripts: source "$(dirname "$0")/theme.sh"
 # STYLECHECK_IGNORE - Sourced file, no set -e needed
+# LINTCHECK_IGNORE - Sourced file, no set -e needed
 
 # Catppuccin Mocha color palette (24-bit true color)
 readonly RED='\033[38;2;243;139;168m'      # #f38ba8 - Errors

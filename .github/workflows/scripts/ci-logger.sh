@@ -2,6 +2,7 @@
 # CI Logging Helper - Clean [tag] style logging for GitHub Actions
 # Usage: source this file in your workflow scripts
 # STYLECHECK_IGNORE - CI workflow script, different standards
+# LINTCHECK_IGNORE - CI workflow script, different standards
 
 # Configuration
 readonly LOG_DIR=".github/logs"
