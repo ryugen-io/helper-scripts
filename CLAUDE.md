@@ -733,13 +733,13 @@ cp /path/to/file /path/to/repo/.backups/file.backup-$(date +%Y%m%d-%H%M%S)
    - Never manually edit files in `.github/workflows/logs/`
    - Logs are auto-generated and auto-committed
 
-4. **CRITICAL: Pull-Commit-Push Workflow**:
-   - **ALWAYS** pull before making changes: `git pull --rebase`
-   - Make changes and commit
+4. **CRITICAL: Commit-Pull-Push Workflow**:
+   - Make changes and commit locally first
+   - Pull with rebase before pushing: `git pull --rebase`
    - Push to remote: `git push`
    - **REPEAT** this cycle for every change
-   - **NEVER** skip pulling before commits (README.md and workflow logs are auto-generated)
-   - Workflow: `pull → commit → push → pull → commit → push`
+   - **ALWAYS** rebase before pushing (README.md and workflow logs are auto-generated)
+   - Workflow: `commit → pull --rebase → push → commit → pull --rebase → push`
 
 ### Environment Variables
 
