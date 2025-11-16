@@ -223,13 +223,68 @@ config = load_env_config(REPO_ROOT)
 
 Location: `dev/`
 
-### check_style.sh
-Checks code style and formatting consistency.
+**All development scripts are Python-based and follow the same theming/design pattern.**
 
-### format.sh
-Automatically formats code files.
+### Pre-Commit Workflow
 
-### lines.sh
+**CRITICAL: Run these scripts in order BEFORE every commit:**
+
+```bash
+# 1. Format code (check mode)
+./dev/format.py --check --recursive
+
+# 2. Compile all Python files
+./dev/pycompile.py --recursive
+
+# 3. Check code style and theming
+./dev/check_style.py --recursive
+
+# 4. Lint shell scripts
+./dev/lint.py
+
+# 5. Fix Nerd Font icons
+./utils/fix_nerdfonts.py
+
+# 6. Remove emojis
+./utils/remove_emojis.py
+
+# Optional: Clean Python caches
+./dev/pyclean.py --dry-run
+```
+
+### check_style.py
+Checks code style and theming consistency for shell and Python scripts.
+
+**Features:**
+- Validates theme usage (.sys/theme/theme.sh or theme.py)
+- Checks for hardcoded colors/icons
+- Verifies logging function usage
+- Supports recursive checking
+
+**Usage:**
+```bash
+./dev/check_style.py                    # Check current directory
+./dev/check_style.py --recursive        # Check recursively
+./dev/check_style.py --types sh py      # Check specific file types
+```
+
+### format.py
+Automatically formats shell scripts using shfmt.
+
+**Features:**
+- Uses shfmt for consistent formatting
+- Check mode (--check) for CI/CD
+- Recursive directory scanning
+- Multiple file type support
+
+**Usage:**
+```bash
+./dev/format.py --check --recursive     # Check formatting (no changes)
+./dev/format.py --recursive             # Format all shell scripts
+./dev/format.py --path /path/to/file    # Format specific file
+```
+
+### lines.py
 Analyzes Rust source files and counts lines of code.
 
 **Features:**
@@ -240,18 +295,24 @@ Analyzes Rust source files and counts lines of code.
 
 **Usage:**
 ```bash
-./dev/lines.sh # Use default 200 line threshold
-./dev/lines.sh 150 # Use custom threshold
+./dev/lines.py                          # Use default 200 line threshold
+./dev/lines.py 150                      # Use custom threshold
 ```
 
-### lint.sh
+### lint.py
 Lints shell scripts for common issues.
 
-**Checks:**
-- Syntax errors (`bash -n`)
+**Features:**
+- Syntax errors (bash -n)
 - Missing shebang
-- Missing `set -e` or `set -o pipefail`
+- Missing set -e or set -o pipefail
 - Executable permissions
+- Color-coded output
+
+**Usage:**
+```bash
+./dev/lint.py                           # Lint all shell scripts in repo
+```
 
 ### pycompile.py
 Python compilation checker - validates Python syntax by compiling to bytecode.
@@ -699,13 +760,12 @@ cp /path/to/file /path/to/repo/.backups/file.backup-$(date +%Y%m%d-%H%M%S)
 
 3. **Make scripts executable**:
    ```bash
-   chmod +x script.sh
+   chmod +x script.py
    ```
 
-4. **Test with linter**:
-   ```bash
-   ./dev/lint.sh
-   ```
+4. **Run pre-commit checks**:
+   - See "Pre-Commit Workflow" in Development Scripts section
+   - All scripts must pass before committing
 
 ### When Modifying GitHub Workflows
 
@@ -769,15 +829,26 @@ cp /path/to/file /path/to/repo/.backups/file.backup-$(date +%Y%m%d-%H%M%S)
 
 ### Testing Checklist
 
-Before committing changes:
+**CRITICAL: Before EVERY commit, run the complete Pre-Commit Workflow:**
 
-- [ ] Scripts are executable (`chmod +x`)
-- [ ] All scripts pass `./dev/lint.sh`
-- [ ] Nerd Font icons display correctly
-- [ ] Colors use theme variables (no hardcoded ANSI codes)
-- [ ] Error handling is present (`set -e`, `set -o pipefail`)
-- [ ] Scripts work with both relative and absolute paths
-- [ ] Documentation is updated
+1. **Run all validation scripts** (see "Pre-Commit Workflow" in Development Scripts):
+   ```bash
+   ./dev/format.py --check --recursive
+   ./dev/pycompile.py --recursive
+   ./dev/check_style.py --recursive
+   ./dev/lint.py
+   ./utils/fix_nerdfonts.py
+   ./utils/remove_emojis.py
+   ```
+
+2. **Verify manual checks**:
+   - [ ] Scripts are executable (`chmod +x`)
+   - [ ] Nerd Font icons display correctly
+   - [ ] Colors use theme variables (no hardcoded ANSI codes)
+   - [ ] Error handling present (`set -e`, `set -o pipefail` for bash)
+   - [ ] Scripts work with both relative and absolute paths
+   - [ ] Documentation is updated (CLAUDE.md, README.md)
+   - [ ] All validation scripts passed ✓
 
 ---
 
@@ -786,27 +857,33 @@ Before committing changes:
 ### Common Commands
 
 ```bash
-# Install scripts to a project
-./install.sh
-
-# Check script quality
-./dev/lint.sh
-
-# Count lines of code
-./dev/lines.sh
-
-# Fix Nerd Font encoding
+# Pre-Commit Workflow (run before EVERY commit)
+./dev/format.py --check --recursive
+./dev/pycompile.py --recursive
+./dev/check_style.py --recursive
+./dev/lint.py
 ./utils/fix_nerdfonts.py
+./utils/remove_emojis.py
 
-# Update README
-./utils/update_readme.py
+# Development Tools
+./dev/lines.py                        # Count lines of code
+./dev/venv.py                         # Create Python venv
+./dev/pyclean.py --dry-run            # Check Python caches
 
-# Docker operations (after deployment)
-./docker/start.sh
-./docker/stop.sh
-./docker/status.sh
-./docker/logs.sh [lines]
-./docker/rebuild.sh
+# Utility Scripts
+./utils/update_readme.py              # Update README
+./utils/fix_nerdfonts.py              # Fix Nerd Font icons
+./utils/remove_emojis.py              # Remove emojis
+
+# Installation
+./install.py                          # Interactive installation
+
+# Docker operations (after deployment with install.py)
+./docker/start.sh                     # Start container
+./docker/stop.sh                      # Stop container
+./docker/status.sh                    # Show status
+./docker/logs.sh [lines]              # Check logs
+./docker/rebuild.sh                   # Rebuild image
 ```
 
 ### Important Files
