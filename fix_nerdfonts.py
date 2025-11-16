@@ -109,60 +109,12 @@ def fix_icons_in_file(filepath: Path, dry_run: bool = False) -> bool:
         return False
 
 
-def write_claude_md(files: list, output_path: Path):
-    """
-    Write all file contents to a claude.md file
-
-    Args:
-        files: List of file paths to include
-        output_path: Path to the output file
-    """
-    try:
-        with output_path.open('w', encoding='utf-8') as out:
-            out.write("# Project Files for Claude AI\n\n")
-            out.write(f"Generated: {Path.cwd()}\n")
-            out.write(f"Total files: {len(files)}\n\n")
-            out.write("---\n\n")
-
-            for filepath in sorted(files):
-                if not filepath.exists() or not filepath.is_file():
-                    continue
-
-                try:
-                    content = filepath.read_text(encoding='utf-8')
-                    out.write(f"## File: {filepath.name}\n\n")
-                    out.write(f"**Path:** `{filepath}`\n\n")
-                    out.write("```")
-
-                    # Add language identifier based on file extension
-                    suffix = filepath.suffix.lstrip('.')
-                    if suffix:
-                        out.write(suffix)
-
-                    out.write("\n")
-                    out.write(content)
-                    if not content.endswith('\n'):
-                        out.write('\n')
-                    out.write("```\n\n")
-                    out.write("---\n\n")
-
-                except Exception as e:
-                    log_warn(f"Could not read {filepath}: {e}")
-
-        log_success(f"Created {output_path}")
-        return True
-
-    except Exception as e:
-        log_error(f"Error writing {output_path}: {e}")
-        return False
-
-
 def main():
     """Main function"""
     import argparse
 
     parser = argparse.ArgumentParser(
-        description='Fix Nerd Font icons in files and generate claude.md',
+        description='Fix Nerd Font icons in shell scripts',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog='''
 Examples:
@@ -171,33 +123,13 @@ Examples:
 
   # Fix multiple file types
   python3 fix_nerdfonts.py sh md py
-
-  # Fix multiple file types and create claude.md
-  python3 fix_nerdfonts.py sh md py --output claude.md
-
-  # Dry run to see what would be changed
-  python3 fix_nerdfonts.py sh md --dry-run
-
-  # Fix specific file
-  python3 fix_nerdfonts.py status.sh
         '''
     )
 
     parser.add_argument(
         'filetypes',
         nargs='*',
-        help='File types to scan (e.g., sh md py txt) or specific files. Default: sh'
-    )
-
-    parser.add_argument(
-        '--dry-run',
-        action='store_true',
-        help='Show what would be changed without modifying files'
-    )
-
-    parser.add_argument(
-        '--output',
-        help='Output file to write scanned contents (e.g., claude.md)'
+        help='File types to fix (e.g., sh md py txt). Default: sh'
     )
 
     args = parser.parse_args()
@@ -229,10 +161,7 @@ Examples:
 
     # Header
     tag = f"{Colors.MAUVE}[fix-nerdfonts]{Colors.NC}"
-    if args.dry_run:
-        print(f"{tag} {Colors.YELLOW}DRY RUN:{Colors.NC} Checking Nerd Font icons...")
-    else:
-        print(f"{tag} Fixing Nerd Font icons...")
+    print(f"{tag} Fixing Nerd Font icons...")
     print()
 
     total_files = 0
@@ -250,18 +179,11 @@ Examples:
         total_files += 1
         print(f"{Colors.BLUE}Processing{Colors.NC} {filepath.name}...")
 
-        if fix_icons_in_file(filepath, dry_run=args.dry_run):
+        if fix_icons_in_file(filepath, dry_run=False):
             fixed_files += 1
         else:
             log_info(f"No changes needed for {filepath.name}")
 
-        print()
-
-    # Generate claude.md if requested
-    if args.output:
-        output_path = Path(args.output)
-        print(f"{Colors.BLUE}Generating{Colors.NC} {output_path}...")
-        write_claude_md(files, output_path)
         print()
 
     # Summary
@@ -269,13 +191,6 @@ Examples:
     print()
     print(f"{Colors.BLUE}  Total files:     {Colors.NC}{total_files}")
     print(f"{Colors.GREEN}  Files fixed:     {Colors.NC}{fixed_files}")
-
-    if args.output:
-        print(f"{Colors.SAPPHIRE}  Output file:     {Colors.NC}{args.output}")
-
-    if args.dry_run and fixed_files > 0:
-        print()
-        log_info(f"Run without {Colors.BLUE}--dry-run{Colors.NC} to apply changes")
 
     return 0
 
