@@ -9,33 +9,10 @@ set -o pipefail
 readonly SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 readonly DEFAULT_LIMIT=200
 
-# Catppuccin Mocha color palette (24-bit true color)
-readonly RED='\033[38;2;243;139;168m'        # #f38ba8 - Errors
-readonly GREEN='\033[38;2;166;227;161m'      # #a6e3a1 - Success/Info
-readonly YELLOW='\033[38;2;249;226;175m'     # #f9e2af - Warnings
-readonly BLUE='\033[38;2;137;180;250m'       # #89b4fa - Info highlights
-readonly MAUVE='\033[38;2;203;166;247m'      # #cba6f7 - Headers
-readonly SAPPHIRE='\033[38;2;116;199;236m'   # #74c7ec - Success highlights
-readonly TEXT='\033[38;2;205;214;244m'       # #cdd6f4 - Normal text
-readonly SUBTEXT='\033[38;2;165;173;203m'    # #a5adcb - Dimmed text
-readonly NC='\033[0m'                         # No Color
-
-# Nerd Font Icons
-readonly CHART="󰈙"
-readonly FILE=""
-readonly WARN=""
-# Logging functions
-log_info() {
-    echo -e "${BLUE}  ${NC}$1"
-}
-
-log_warn() {
-    echo -e "${YELLOW}${WARN}  ${NC}$1"
-}
-
-log_success() {
-    echo -e "${SAPPHIRE}  ${NC}$1"
-}
+# Source central theme
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+source "$REPO_ROOT/.sys/theme/theme.sh"
 
 # Cleanup on exit
 cleanup() {

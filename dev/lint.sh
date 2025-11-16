@@ -5,35 +5,10 @@
 set -e
 set -o pipefail
 
-# Catppuccin Mocha color palette
-readonly RED='\033[38;2;243;139;168m'
-readonly GREEN='\033[38;2;166;227;161m'
-readonly YELLOW='\033[38;2;249;226;175m'
-readonly BLUE='\033[38;2;137;180;250m'
-readonly MAUVE='\033[38;2;203;166;247m'
-readonly SAPPHIRE='\033[38;2;116;199;236m'
-readonly NC='\033[0m'
-
-# Nerd Font Icons
-readonly CHECK=""
-readonly CROSS=""
-readonly WARN=""
-log_success() {
-    echo -e "${GREEN}${CHECK}  ${NC}$1"
-}
-
-log_error() {
-    echo -e "${RED}${CROSS}  ${NC}$1"
-}
-
-log_warn() {
-    echo -e "${YELLOW}${WARN}  ${NC}$1"
-}
-
-log_info() {
-    echo -e "${BLUE}  ${NC}$1"
-}
-
+# Source central theme
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+source "$REPO_ROOT/.sys/theme/theme.sh"
 # Script configuration
 readonly SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 readonly REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"

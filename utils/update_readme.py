@@ -3,8 +3,17 @@
 Simple README Generator - Lists all project files as links
 """
 
+import sys
 import os
 from pathlib import Path
+
+# Add .sys/theme to path for central theming
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parent
+sys.path.insert(0, str(REPO_ROOT / '.sys' / 'theme'))
+
+# Import central theme
+from theme import Colors, Icons, log_success
 
 def load_env_config(repo_root: Path) -> dict:
     """Load configuration from .env file."""
@@ -88,7 +97,7 @@ def main():
     with open(readme_path, 'w') as f:
         f.write(readme_content)
 
-    print(f"README.md updated with {len(files)} files")
+    log_success(f"README.md updated with {len(files)} files")
 
 if __name__ == '__main__':
     main()

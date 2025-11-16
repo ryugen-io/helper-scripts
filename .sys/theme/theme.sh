@@ -28,6 +28,27 @@ readonly HAMMER=""    # Hammer/build
 readonly CLEAN=""     # Broom/clean
 readonly MAGIC="✨"    # Sparkles (formatter)
 
+# Standard logging functions for consistent output
+log_success() {
+    echo -e "${GREEN}${CHECK}  ${NC}$1"
+}
+
+log_error() {
+    echo -e "${RED}${CROSS}  ${NC}$1" >&2
+}
+
+log_warn() {
+    echo -e "${YELLOW}${WARN}  ${NC}$1"
+}
+
+log_info() {
+    echo -e "${BLUE}${INFO}  ${NC}$1"
+}
+
+log_header() {
+    echo -e "${MAUVE}$1${NC}"
+}
+
 # Export all variables so they're available in subshells
 export RED GREEN YELLOW BLUE MAUVE SAPPHIRE TEXT SUBTEXT NC
 export CHECK CROSS WARN INFO DOCKER ROCKET FOLDER QUESTION
