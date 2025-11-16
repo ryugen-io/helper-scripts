@@ -14,8 +14,5 @@ Thumbs.db
 *.bak
 *.backup*
 
-# CI/CD Skip file (use .github/skips/.skip.example as template)
-.github/skips/.skip
-
 # Environment configuration (use .env.example as template)
 .env
