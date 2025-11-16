@@ -1,6 +1,5 @@
 # Helper Scripts
 
-- [.github/skips/.skip](.github/skips/.skip)
 - [.github/skips/.skip.all.example](.github/skips/.skip.all.example)
 - [.github/skips/.skip.claude](.github/skips/.skip.claude)
 - [.github/skips/.skip.claude-review](.github/skips/.skip.claude-review)
