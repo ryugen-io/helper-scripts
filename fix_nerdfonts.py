@@ -84,7 +84,7 @@ def fix_icons_in_file(filepath: Path, dry_run: bool = False) -> bool:
         # Pattern to match: readonly ICON_NAME=""
         # We'll replace the empty string with the actual icon
         for icon_name, icon_char in NERD_FONTS.items():
-            # Match patterns like: readonly CHECK=""
+            # Match patterns like: readonly CHECK=""
             pattern = rf'(readonly\s+{icon_name}=)""\s*$'
             replacement = rf'\1"{icon_char}"'
 
@@ -169,11 +169,14 @@ Examples:
   # Fix all .sh files in current directory
   python3 fix_nerdfonts.py
 
+  # Fix multiple file types
+  python3 fix_nerdfonts.py sh md py
+
   # Fix multiple file types and create claude.md
-  python3 fix_nerdfonts.py --filetypes sh md py --output claude.md
+  python3 fix_nerdfonts.py sh md py --output claude.md
 
   # Dry run to see what would be changed
-  python3 fix_nerdfonts.py --dry-run
+  python3 fix_nerdfonts.py sh md --dry-run
 
   # Fix specific file
   python3 fix_nerdfonts.py status.sh
@@ -181,22 +184,15 @@ Examples:
     )
 
     parser.add_argument(
-        'files',
+        'filetypes',
         nargs='*',
-        help='Files to fix (default: files based on --filetypes)'
+        help='File types to scan (e.g., sh md py txt) or specific files. Default: sh'
     )
 
     parser.add_argument(
         '--dry-run',
         action='store_true',
         help='Show what would be changed without modifying files'
-    )
-
-    parser.add_argument(
-        '--filetypes',
-        nargs='+',
-        default=['sh'],
-        help='File types to scan (e.g., sh md py txt). Default: sh'
     )
 
     parser.add_argument(
@@ -207,15 +203,28 @@ Examples:
     args = parser.parse_args()
 
     # Determine which files to process
-    if args.files:
-        files = [Path(f) for f in args.files]
+    files = []
+
+    if not args.filetypes:
+        # Default: scan .sh files
+        files = list(Path('.').glob('*.sh'))
     else:
-        files = []
-        for filetype in args.filetypes:
-            files.extend(list(Path('.').glob(f'*.{filetype}')))
+        # Check if arguments are files or file types
+        for arg in args.filetypes:
+            arg_path = Path(arg)
+            if arg_path.exists() and arg_path.is_file():
+                # It's a specific file
+                files.append(arg_path)
+            else:
+                # It's a file type - scan for files with this extension
+                pattern = f'*.{arg}' if not arg.startswith('*.') else arg
+                files.extend(list(Path('.').glob(pattern)))
 
     if not files:
-        log_error(f"No files found matching types: {', '.join(args.filetypes)}")
+        if args.filetypes:
+            log_error(f"No files found matching types: {', '.join(args.filetypes)}")
+        else:
+            log_error("No files found!")
         return 1
 
     # Header

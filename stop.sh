@@ -14,13 +14,12 @@ readonly TEXT='\033[38;2;205;214;244m'       # #cdd6f4 - Normal text
 readonly NC='\033[0m'                         # No Color
 
 # Nerd Font Icons
-readonly INFO=""
-readonly WARN=""
-readonly CROSS=""
-readonly CHECK=""
-readonly DOCKER=""
-readonly STOP=""
-
+readonly INFO=""
+readonly WARN=""
+readonly CROSS=""
+readonly CHECK=""
+readonly DOCKER=""
+readonly STOP=""
 # CUSTOMIZE THIS
 readonly CONTAINER_NAME="your-container-name"
 
