@@ -9,7 +9,7 @@ from pathlib import Path
 
 # Add .sys/theme to path for central theming
 SCRIPT_DIR = Path(__file__).resolve().parent
-REPO_ROOT = SCRIPT_DIR.parent
+REPO_ROOT = SCRIPT_DIR.parent.parent.parent  # Go up 3 levels: scripts/ -> workflows/ -> .github/ -> repo root
 sys.path.insert(0, str(REPO_ROOT / '.sys' / 'theme'))
 
 # Import central theme
@@ -40,7 +40,7 @@ def load_env_config(repo_root: Path) -> dict:
 
 def scan_files() -> list:
     """Scan repository for all files."""
-    repo_root = Path(__file__).parent.parent
+    repo_root = Path(__file__).parent.parent.parent.parent  # Go up 4 levels to repo root
     config = load_env_config(repo_root)
     files = []
 
@@ -91,7 +91,7 @@ def main():
     readme_content = generate_readme(files)
 
     # Write README
-    repo_root = Path(__file__).parent.parent
+    repo_root = Path(__file__).parent.parent.parent.parent  # Go up 4 levels to repo root
     readme_path = repo_root / 'README.md'
 
     with open(readme_path, 'w') as f:

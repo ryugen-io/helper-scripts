@@ -1,9 +1,15 @@
 # Helper Scripts
 
 - [.github/skips/.skip](.github/skips/.skip)
-- [.github/skips/.skip.example](.github/skips/.skip.example)
+- [.github/skips/.skip.all.example](.github/skips/.skip.all.example)
+- [.github/skips/.skip.claude](.github/skips/.skip.claude)
+- [.github/skips/.skip.claude-review](.github/skips/.skip.claude-review)
+- [.github/skips/.skip.claude-review.example](.github/skips/.skip.claude-review.example)
+- [.github/skips/.skip.claude.example](.github/skips/.skip.claude.example)
+- [.github/skips/.skip.update-readme.example](.github/skips/.skip.update-readme.example)
 - [.github/skips/SKIP_SYSTEM.md](.github/skips/SKIP_SYSTEM.md)
-- [claude.md](claude.md)
+- [.github/skips/generate_skip_hash.py](.github/skips/generate_skip_hash.py)
+- [CLAUDE.md](CLAUDE.md)
 - [dev/check_style.sh](dev/check_style.sh)
 - [dev/format.sh](dev/format.sh)
 - [dev/lines.sh](dev/lines.sh)
@@ -19,5 +25,4 @@
 - [install.sh](install.sh)
 - [utils/fix_nerdfonts.py](utils/fix_nerdfonts.py)
 - [utils/remove_emojis.py](utils/remove_emojis.py)
-- [utils/remove_emojis.sh](utils/remove_emojis.sh)
 - [utils/update_readme.py](utils/update_readme.py)
