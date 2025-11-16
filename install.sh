@@ -95,30 +95,68 @@ prompt_yes_no() {
     fi
 }
 
+get_script_description() {
+    local file=$1
+
+    # Extract description from line 2 (comment after shebang)
+    # Remove leading "# " from the comment
+    local desc=$(sed -n '2p' "$file" | sed 's/^#[[:space:]]*//')
+
+    # If no description found, use generic one
+    if [ -z "$desc" ]; then
+        desc="Script"
+    fi
+
+    echo "$desc"
+}
+
+scan_available_scripts() {
+    local -n scripts_arr=$1
+
+    # Scan docker directory
+    for script in "$SCRIPT_DIR"/docker/*.sh; do
+        if [ -f "$script" ]; then
+            local relative_path="docker/$(basename "$script")"
+            local desc=$(get_script_description "$script")
+            scripts_arr+=("${relative_path}:${desc}")
+        fi
+    done
+
+    # Scan dev directory
+    for script in "$SCRIPT_DIR"/dev/*.sh; do
+        if [ -f "$script" ]; then
+            local relative_path="dev/$(basename "$script")"
+            local desc=$(get_script_description "$script")
+            scripts_arr+=("${relative_path}:${desc}")
+        fi
+    done
+
+    # Scan utils directory for Python scripts
+    for script in "$SCRIPT_DIR"/utils/*.py; do
+        if [ -f "$script" ]; then
+            local relative_path="utils/$(basename "$script")"
+            local desc=$(get_script_description "$script")
+            scripts_arr+=("${relative_path}:${desc}")
+        fi
+    done
+}
+
 select_scripts() {
     local -n arr=$1
 
     log_header "Select scripts to install:"
     echo ""
 
-    local scripts=(
-        "docker/start.sh:Start container"
-        "docker/stop.sh:Stop container"
-        "docker/status.sh:Show container status"
-        "docker/logs.sh:Check logs for errors/warnings"
-        "docker/rebuild.sh:Rebuild container image"
-        "dev/lines.sh:Count lines of code"
-        "dev/lint.sh:Lint shell scripts"
-        "dev/check_style.sh:Validate coding guidelines and theming"
-        "utils/fix_nerdfonts.py:Fix Nerd Font icons"
-    )
+    # Dynamically scan for available scripts
+    local scripts=()
+    scan_available_scripts scripts
 
     echo -e "${TEXT}Available scripts:${NC}"
     echo ""
 
     for i in "${!scripts[@]}"; do
         IFS=':' read -r script desc <<< "${scripts[$i]}"
-        printf "${SUBTEXT}  %d)${NC} %-20s ${SUBTEXT}%s${NC}\n" $((i+1)) "$script" "$desc"
+        printf "${SUBTEXT}  %d)${NC} %-30s ${SUBTEXT}%s${NC}\n" $((i+1)) "$script" "$desc"
     done
 
     echo ""
@@ -138,7 +176,13 @@ select_scripts() {
             arr+=("$script")
         done
     elif [ "$selection" = "core" ]; then
-        arr=("docker/start.sh" "docker/stop.sh" "docker/status.sh" "docker/logs.sh")
+        # Core scripts: only docker management scripts
+        for script_info in "${scripts[@]}"; do
+            IFS=':' read -r script _ <<< "$script_info"
+            if [[ "$script" == docker/* ]] && [[ "$script" != *rebuild.sh ]]; then
+                arr+=("$script")
+            fi
+        done
     else
         for num in $selection; do
             if [[ "$num" =~ ^[0-9]+$ ]] && [ "$num" -ge 1 ] && [ "$num" -le "${#scripts[@]}" ]; then
