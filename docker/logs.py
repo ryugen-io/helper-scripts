@@ -5,7 +5,6 @@ Check container logs for errors and warnings
 
 import sys
 import subprocess
-import os
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -17,20 +16,31 @@ from theme import (  # noqa: E402
 )
 
 
-def load_env():
-    """Load environment variables from .sys/env/.env."""
-    env_file = REPO_ROOT / '.sys' / 'env' / '.env'
-    if env_file.exists():
-        with open(env_file) as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith('#') and '=' in line:
-                    key, value = line.split('=', 1)
-                    os.environ.setdefault(key, value)
+def load_env_config(repo_root: Path) -> dict:
+    """Load configuration from .env file"""
+    config = {
+        'SYS_DIR': '.sys',
+        'GITHUB_DIR': '.github',
+        'SCRIPT_DIRS': 'docker,dev,utils,rust',
+        'CONTAINER_NAME': 'your-container-name',
+        'IMAGE_NAME': 'your-image-name:latest',
+        'DISPLAY_NAME': 'Your Service',
+        'DOCKERFILE_PATH': './Dockerfile'
+    }
 
+    sys_env_dir = repo_root / config['SYS_DIR'] / 'env'
+    for env_name in ['.env', '.env.example']:
+        env_file = sys_env_dir / env_name
+        if env_file.exists():
+            with open(env_file, 'r') as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith('#') and '=' in line:
+                        key, value = line.split('=', 1)
+                        config[key] = value
+            break
 
-load_env()
-CONTAINER_NAME = os.getenv('CONTAINER_NAME', 'your-container-name')
+    return config
 
 
 def container_exists(name: str) -> bool:
@@ -64,18 +74,21 @@ def get_logs(name: str, lines: int) -> str:
 
 def main():
     """Main execution."""
+    config = load_env_config(REPO_ROOT)
+    container_name = config['CONTAINER_NAME']
+
     lines = int(sys.argv[1]) if len(sys.argv) > 1 else 100
 
     print()
     print(f"{Colors.MAUVE}[logs]{Colors.NC} {Icons.LOG}  "
-          f"Checking {CONTAINER_NAME} logs (last {lines} lines)...")
+          f"Checking {container_name} logs (last {lines} lines)...")
     print()
 
-    if not container_exists(CONTAINER_NAME):
-        log_error(f"Container '{CONTAINER_NAME}' not found")
+    if not container_exists(container_name):
+        log_error(f"Container '{container_name}' not found")
         sys.exit(1)
 
-    logs = get_logs(CONTAINER_NAME, lines)
+    logs = get_logs(container_name, lines)
 
     error_lines = [line for line in logs.split('\n') if 'ERROR' in line]
     warn_lines = [line for line in logs.split('\n') if 'WARN' in line]
@@ -115,9 +128,9 @@ def main():
         log_warn(f"Found {warn_count} warnings")
 
     print()
-    log_info(f"View full logs: {Colors.BLUE}docker logs {CONTAINER_NAME}"
+    log_info(f"View full logs: {Colors.BLUE}docker logs {container_name}"
              f"{Colors.NC}")
-    log_info(f"Follow logs: {Colors.BLUE}docker logs -f {CONTAINER_NAME}"
+    log_info(f"Follow logs: {Colors.BLUE}docker logs -f {container_name}"
              f"{Colors.NC}")
     print()
 

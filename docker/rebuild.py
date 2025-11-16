@@ -6,7 +6,6 @@ Rebuild Docker container (stop, rebuild image, restart)
 import sys
 import subprocess
 import time
-import os
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -18,22 +17,31 @@ from theme import (  # noqa: E402
 )
 
 
-def load_env():
-    """Load environment variables from .sys/env/.env."""
-    env_file = REPO_ROOT / '.sys' / 'env' / '.env'
-    if env_file.exists():
-        with open(env_file) as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith('#') and '=' in line:
-                    key, value = line.split('=', 1)
-                    os.environ.setdefault(key, value)
+def load_env_config(repo_root: Path) -> dict:
+    """Load configuration from .env file"""
+    config = {
+        'SYS_DIR': '.sys',
+        'GITHUB_DIR': '.github',
+        'SCRIPT_DIRS': 'docker,dev,utils,rust',
+        'CONTAINER_NAME': 'your-container-name',
+        'IMAGE_NAME': 'your-image-name:latest',
+        'DISPLAY_NAME': 'Your Service',
+        'DOCKERFILE_PATH': './Dockerfile'
+    }
 
+    sys_env_dir = repo_root / config['SYS_DIR'] / 'env'
+    for env_name in ['.env', '.env.example']:
+        env_file = sys_env_dir / env_name
+        if env_file.exists():
+            with open(env_file, 'r') as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith('#') and '=' in line:
+                        key, value = line.split('=', 1)
+                        config[key] = value
+            break
 
-load_env()
-CONTAINER_NAME = os.getenv('CONTAINER_NAME', 'your-container-name')
-IMAGE_NAME = os.getenv('IMAGE_NAME', 'your-image-name:latest')
-DOCKERFILE_PATH = os.getenv('DOCKERFILE_PATH', './Dockerfile')
+    return config
 
 
 def is_running(name: str) -> bool:
@@ -68,29 +76,34 @@ def container_exists(name: str) -> bool:
 
 def main():
     """Main execution."""
+    config = load_env_config(REPO_ROOT)
+    container_name = config['CONTAINER_NAME']
+    image_name = config['IMAGE_NAME']
+    dockerfile_path = config['DOCKERFILE_PATH']
+
     print()
     print(f"{Colors.MAUVE}[rebuild]{Colors.NC} {Icons.HAMMER}  "
-          f"Rebuilding {CONTAINER_NAME} container...")
+          f"Rebuilding {container_name} container...")
     print()
 
-    dockerfile = Path(DOCKERFILE_PATH)
+    dockerfile = Path(dockerfile_path)
     if not dockerfile.exists():
-        log_error(f"Dockerfile not found at: {DOCKERFILE_PATH}")
+        log_error(f"Dockerfile not found at: {dockerfile_path}")
         sys.exit(1)
 
-    if is_running(CONTAINER_NAME):
+    if is_running(container_name):
         log_info("Stopping running container...")
         try:
-            subprocess.run(['docker', 'stop', CONTAINER_NAME], check=True)
+            subprocess.run(['docker', 'stop', container_name], check=True)
             time.sleep(1)
         except subprocess.CalledProcessError:
             log_error("Failed to stop container")
             sys.exit(1)
 
-    log_info(f"Building Docker image: {IMAGE_NAME}...")
+    log_info(f"Building Docker image: {image_name}...")
     try:
         subprocess.run(
-            ['docker', 'build', '-t', IMAGE_NAME, '.'],
+            ['docker', 'build', '-t', image_name, '.'],
             cwd=SCRIPT_DIR,
             check=True
         )
@@ -100,10 +113,10 @@ def main():
 
     log_success("Image built successfully")
 
-    if container_exists(CONTAINER_NAME):
+    if container_exists(container_name):
         log_info("Removing old container...")
         try:
-            subprocess.run(['docker', 'rm', CONTAINER_NAME], check=True)
+            subprocess.run(['docker', 'rm', container_name], check=True)
         except subprocess.CalledProcessError:
             log_error("Failed to remove old container")
             sys.exit(1)
@@ -114,7 +127,7 @@ def main():
     log_info("Please customize the docker run command in this script")
 
     print()
-    log_info(f"Image: {Colors.BLUE}{IMAGE_NAME}{Colors.NC}")
+    log_info(f"Image: {Colors.BLUE}{image_name}{Colors.NC}")
     log_info(f"Next: Start container with: {Colors.BLUE}./start.py"
              f"{Colors.NC}")
     print()

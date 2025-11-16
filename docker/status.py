@@ -6,7 +6,6 @@ Check the current status and stats of Docker container
 import sys
 import subprocess
 import json
-import os
 from datetime import datetime
 from pathlib import Path
 
@@ -19,21 +18,31 @@ from theme import (  # noqa: E402
 )
 
 
-def load_env():
-    """Load environment variables from .sys/env/.env."""
-    env_file = REPO_ROOT / '.sys' / 'env' / '.env'
-    if env_file.exists():
-        with open(env_file) as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith('#') and '=' in line:
-                    key, value = line.split('=', 1)
-                    os.environ.setdefault(key, value)
+def load_env_config(repo_root: Path) -> dict:
+    """Load configuration from .env file"""
+    config = {
+        'SYS_DIR': '.sys',
+        'GITHUB_DIR': '.github',
+        'SCRIPT_DIRS': 'docker,dev,utils,rust',
+        'CONTAINER_NAME': 'your-container-name',
+        'IMAGE_NAME': 'your-image-name:latest',
+        'DISPLAY_NAME': 'Your Service',
+        'DOCKERFILE_PATH': './Dockerfile'
+    }
 
+    sys_env_dir = repo_root / config['SYS_DIR'] / 'env'
+    for env_name in ['.env', '.env.example']:
+        env_file = sys_env_dir / env_name
+        if env_file.exists():
+            with open(env_file, 'r') as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith('#') and '=' in line:
+                        key, value = line.split('=', 1)
+                        config[key] = value
+            break
 
-load_env()
-CONTAINER_NAME = os.getenv('CONTAINER_NAME', 'your-container-name')
-DISPLAY_NAME = os.getenv('DISPLAY_NAME', 'Your Service')
+    return config
 
 
 def log_stat(icon: str, label: str, value: str, color: str):
@@ -184,18 +193,22 @@ def show_container_status(name: str, display_name: str, icon: str):
 
 def main():
     """Main execution."""
+    config = load_env_config(REPO_ROOT)
+    container_name = config['CONTAINER_NAME']
+    display_name = config['DISPLAY_NAME']
+
     print(f"{Colors.MAUVE}[status]{Colors.NC} {Icons.DOCKER}  "
-          f"Checking {CONTAINER_NAME} container status...")
+          f"Checking {container_name} container status...")
     print()
 
-    if not container_exists(CONTAINER_NAME):
-        log_error(f"{CONTAINER_NAME} container not found")
+    if not container_exists(container_name):
+        log_error(f"{container_name} container not found")
         print()
         sys.exit(1)
 
-    show_container_status(CONTAINER_NAME, DISPLAY_NAME, Icons.SERVER)
+    show_container_status(container_name, display_name, Icons.SERVER)
 
-    if is_running(CONTAINER_NAME):
+    if is_running(container_name):
         log_success("Container is running")
     else:
         log_error("Container is not running")

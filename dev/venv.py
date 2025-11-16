@@ -103,6 +103,9 @@ class VenvCreator:
             log_success(f"Virtual environment created successfully")
             print()
 
+            # Update .env if custom venv name
+            self._update_env_config(venv_name)
+
             # Show activation instructions
             self._show_activation_info(venv_path, venv_name)
 
@@ -118,6 +121,36 @@ class VenvCreator:
             print()
             log_error(f"Unexpected error: {e}")
             return 1
+
+    def _update_env_config(self, venv_name: str) -> None:
+        """Update .env file with new venv name if it's not the default"""
+        if venv_name == '.venv':
+            return
+
+        env_file = REPO_ROOT / self.config['SYS_DIR'] / 'env' / '.env'
+        if not env_file.exists():
+            return
+
+        try:
+            with open(env_file, 'r') as f:
+                lines = f.readlines()
+
+            updated = False
+            for i, line in enumerate(lines):
+                if line.strip().startswith('PYTHON_VENV_DEFAULT='):
+                    lines[i] = f'PYTHON_VENV_DEFAULT={venv_name}\n'
+                    updated = True
+                    break
+
+            if updated:
+                with open(env_file, 'w') as f:
+                    f.writelines(lines)
+                log_info(f"Updated .env: PYTHON_VENV_DEFAULT={venv_name}")
+                print()
+
+        except Exception as e:
+            log_warn(f"Could not update .env: {e}")
+            print()
 
     def _show_activation_info(self, venv_path: Path, venv_name: str) -> None:
         """Show activation instructions"""
