@@ -30,8 +30,10 @@ DESCRIPTIONS = {
     'dev/lines.sh': 'Count lines of code with detailed statistics',
     'dev/lint.sh': 'Lint shell scripts for common issues',
     'dev/check_style.sh': 'Validate coding guidelines and theming consistency',
+    'dev/format.sh': 'Format shell scripts using shfmt (like cargo fmt)',
     'utils/fix_nerdfonts.py': 'Fix Nerd Font icon encoding issues in shell scripts',
     'utils/update_readme.py': 'Dynamically generate README.md based on repository contents',
+    'utils/remove_emojis.sh': 'Remove all emojis and Unicode symbols from files',
     'install.sh': 'Interactive installation script for deploying scripts to projects',
 }
 

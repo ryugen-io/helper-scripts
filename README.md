@@ -41,12 +41,14 @@ The script will:
 ### Development Tools
 
 - **check_style.sh** - Validate coding guidelines and theming consistency
+- **format.sh** - Format shell scripts using shfmt (like cargo fmt)
 - **lines.sh** - Count lines of code with detailed statistics
 - **lint.sh** - Lint shell scripts for common issues
 
 ### Utilities
 
 - **fix_nerdfonts.py** - Fix Nerd Font icon encoding issues in shell scripts
+- **remove_emojis.sh** - Remove all emojis and Unicode symbols from files
 - **update_readme.py** - Dynamically generate README.md based on repository contents
 
 ## Customization
