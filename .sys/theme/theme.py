@@ -5,6 +5,8 @@ STYLECHECK_IGNORE - Python module, no shebang needed
 """
 
 # Catppuccin Mocha color palette (24-bit true color)
+
+
 class Colors:
     RED = '\033[38;2;243;139;168m'        # #f38ba8 - Errors
     GREEN = '\033[38;2;166;227;161m'      # #a6e3a1 - Success
@@ -16,7 +18,10 @@ class Colors:
     SUBTEXT = '\033[38;2;186;194;222m'    # #bac2de - Subtext/dimmed
     NC = '\033[0m'                         # No Color / Reset
 
+
 # Nerd Font Icons
+
+
 class Icons:
     CHECK = '\uf00c'      #
     CROSS = '\uf00d'      #
@@ -43,22 +48,27 @@ class Icons:
     RESTART = '\uf01e'    #
     STATUS = '\uf05a'     #
 
+
 def log_success(msg: str):
     """Log success message with icon"""
     print(f"{Colors.GREEN}{Icons.CHECK}  {Colors.NC}{msg}")
+
 
 def log_error(msg: str):
     """Log error message with icon"""
     import sys
     print(f"{Colors.RED}{Icons.CROSS}  {Colors.NC}{msg}", file=sys.stderr)
 
+
 def log_warn(msg: str):
     """Log warning message with icon"""
     print(f"{Colors.YELLOW}{Icons.WARN}  {Colors.NC}{msg}")
 
+
 def log_info(msg: str):
     """Log info message with icon"""
     print(f"{Colors.BLUE}{Icons.INFO}  {Colors.NC}{msg}")
+
 
 def log_header(msg: str):
     """Log header message"""
