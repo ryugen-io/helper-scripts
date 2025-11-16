@@ -13,15 +13,15 @@ source "$REPO_ROOT/.sys/theme/theme.sh"
 readonly SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 readonly REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# Set defaults first
+# Load environment configuration from .sys/env/.env
+if [ -f "$REPO_ROOT/.sys/env/.env" ]; then
+    # shellcheck disable=SC1090
+    source "$REPO_ROOT/.sys/env/.env"
+fi
+
+# Set defaults if not defined by .env
 SYS_DIR="${SYS_DIR:-.sys}"
 SCRIPT_DIRS="${SCRIPT_DIRS:-docker,dev,utils}"
-
-# Load environment configuration from .sys/env/.env
-if [ -f "$REPO_ROOT/$SYS_DIR/env/.env" ]; then
-    # shellcheck disable=SC1090
-    source "$REPO_ROOT/$SYS_DIR/env/.env"
-fi
 
 # shfmt configuration options
 # -i 4: Use 4 spaces for indentation

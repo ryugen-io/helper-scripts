@@ -15,14 +15,14 @@ readonly SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 readonly REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 readonly DEFAULT_LIMIT=200
 
-# Set defaults first
-SYS_DIR="${SYS_DIR:-.sys}"
-
 # Load environment configuration from .sys/env/.env
-if [ -f "$REPO_ROOT/$SYS_DIR/env/.env" ]; then
+if [ -f "$REPO_ROOT/.sys/env/.env" ]; then
     # shellcheck disable=SC1090
-    source "$REPO_ROOT/$SYS_DIR/env/.env"
+    source "$REPO_ROOT/.sys/env/.env"
 fi
+
+# Set defaults if not defined by .env
+SYS_DIR="${SYS_DIR:-.sys}"
 
 # Cleanup on exit
 cleanup() {
