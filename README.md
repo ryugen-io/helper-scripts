@@ -13,6 +13,8 @@
 - [dev/format.py](dev/format.py)
 - [dev/lines.py](dev/lines.py)
 - [dev/lint.py](dev/lint.py)
+- [dev/pyclean.py](dev/pyclean.py)
+- [dev/pycompile.py](dev/pycompile.py)
 - [dev/pylint.py](dev/pylint.py)
 - [dev/shellcheck.py](dev/shellcheck.py)
 - [dev/test.bats](dev/test.bats)
