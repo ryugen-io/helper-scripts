@@ -37,6 +37,31 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Log workflow start
+        run: |
+          source .github/workflows/scripts/ci-logger.sh
+
+          log_header "Claude Code Workflow"
+
+          log_info "Event: ${{ github.event_name }}"
+          log_info "Repository: ${{ github.repository }}"
+
+          if [ "${{ github.event_name }}" = "issue_comment" ]; then
+            log_info "Issue/PR: #${{ github.event.issue.number }}"
+            log_info "Comment by: @${{ github.event.comment.user.login }}"
+          elif [ "${{ github.event_name }}" = "pull_request_review_comment" ]; then
+            log_info "PR: #${{ github.event.pull_request.number }}"
+            log_info "Comment by: @${{ github.event.comment.user.login }}"
+          elif [ "${{ github.event_name }}" = "pull_request_review" ]; then
+            log_info "PR: #${{ github.event.pull_request.number }}"
+            log_info "Review by: @${{ github.event.review.user.login }}"
+          elif [ "${{ github.event_name }}" = "issues" ]; then
+            log_info "Issue: #${{ github.event.issue.number }}"
+            log_info "Action: ${{ github.event.action }}"
+          fi
+
+          log_step "claude" "Starting Claude Code execution..."
+
       - name: Run Claude Code
         id: claude
         uses: anthropics/claude-code-action@v1
@@ -54,4 +79,26 @@ jobs:
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://docs.claude.com/en/docs/claude-code/cli-reference for available options
           # claude_args: '--allowed-tools Bash(gh pr:*)'
+
+      - name: Log workflow completion
+        if: always()
+        run: |
+          source .github/workflows/scripts/ci-logger.sh
+
+          if [ "${{ steps.claude.outcome }}" = "success" ]; then
+            log_success "Claude Code completed successfully"
+          else
+            log_error "Claude Code failed with status: ${{ steps.claude.outcome }}"
+          fi
+
+          log_info "Workflow log saved to: ${LOG_FILE}"
+          log_header "${CHECK}  Claude workflow complete!"
+
+      - name: Upload workflow logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: claude-workflow-logs
+          path: .github/workflows/logs/
+          retention-days: 30
 

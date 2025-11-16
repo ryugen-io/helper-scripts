@@ -23,36 +23,58 @@ jobs:
         env:
           EXPECTED_SKIP_HASH: ${{ secrets.SKIP_FILE_HASH }}
         run: |
-          # Nerd Font Icons
-          CHECK=""
-          WARN=""
-          INFO=""
+          source .github/workflows/scripts/ci-logger.sh
+
+          log_header "CI/CD Skip Check"
+
           SKIP_FILE=".github/skips/.skip"
 
           if [ ! -f "$SKIP_FILE" ]; then
             echo "skip=false" >> $GITHUB_OUTPUT
-            echo -e "${CHECK}  No skip file - proceeding with CI/CD"
+            log_success "No skip file found - CI/CD will proceed"
+            log_info "Workflow log saved to: ${LOG_FILE}"
             exit 0
           fi
 
+          log_info "Skip file found at: ${SKIP_FILE}"
           SKIP_FILE_HASH=$(sha256sum "$SKIP_FILE" | awk '{print $1}')
 
           if [ -n "$EXPECTED_SKIP_HASH" ]; then
+            log_step "verify" "Verifying skip file hash..."
             if [ "$SKIP_FILE_HASH" = "$EXPECTED_SKIP_HASH" ]; then
               echo "skip=true" >> $GITHUB_OUTPUT
-              echo -e "${CHECK}  Skip file verified (hash) - skipping CI/CD"
+              log_success "Skip file verified (hash match)"
+              log_warn "CI/CD workflows will be SKIPPED"
             else
               echo "skip=false" >> $GITHUB_OUTPUT
-              echo -e "${WARN}  Skip file hash mismatch - proceeding for security"
+              log_error "Skip file hash mismatch!"
+              log_warn "Expected: ${EXPECTED_SKIP_HASH}"
+              log_warn "Got:      ${SKIP_FILE_HASH}"
+              log_info "Proceeding with CI/CD for security reasons"
             fi
           else
+            log_step "verify" "Verifying skip file content (no hash configured)..."
             SKIP_CONTENT=$(cat "$SKIP_FILE" | tr -d '[:space:]')
             if [ "$SKIP_CONTENT" = "SKIP_CLAUDE_CI_APPROVED" ]; then
               echo "skip=true" >> $GITHUB_OUTPUT
-              echo -e "${CHECK}  Skip file verified (content) - skipping CI/CD"
+              log_success "Skip file verified (content match)"
+              log_warn "CI/CD workflows will be SKIPPED"
             else
               echo "skip=false" >> $GITHUB_OUTPUT
-              echo -e "${WARN}  Skip file invalid - proceeding for security"
-              echo -e "${INFO}  See .github/skips/SKIP_SYSTEM.md for setup"
+              log_error "Skip file has invalid content!"
+              log_warn "Expected: 'SKIP_CLAUDE_CI_APPROVED'"
+              log_warn "Got:      '${SKIP_CONTENT}'"
+              log_info "Proceeding with CI/CD for security reasons"
+              log_info "See .github/skips/SKIP_SYSTEM.md for setup instructions"
             fi
           fi
+
+          log_info "Workflow log saved to: ${LOG_FILE}"
+
+      - name: Upload skip check logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: skip-check-logs
+          path: .github/workflows/logs/
+          retention-days: 30
