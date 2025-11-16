@@ -115,7 +115,7 @@ def fix_icons_in_file(filepath: Path, dry_run: bool = False) -> bool:
         # Pattern to match: readonly ICON_NAME=""
         # We'll replace the empty string with the actual icon
         for icon_name, icon_char in NERD_FONTS.items():
-            # Match patterns like: readonly CHECK=""
+            # Match patterns like: readonly CHECK=""
             # Updated patterns to handle variable whitespace around =
             # Pattern 1: With readonly (shell scripts)
             pattern1 = rf'(readonly\s+{icon_name})\s*=\s*""\s*$'

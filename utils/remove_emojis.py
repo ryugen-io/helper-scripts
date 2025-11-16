@@ -33,55 +33,41 @@ def remove_emojis(text: str) -> str:
     Returns:
         Text with emojis removed and whitespace normalized
     """
-    # Emoji ranges to remove (preserves Nerd Font PUA ranges)
+    # Emoji ranges to remove (ONLY chat emojis from emojidb.org)
+    # Preserves Nerd Font icons (U+E000-U+F8FF, U+F0000-U+FFFFD)
+    # Preserves Box-Drawing characters (U+2500-U+257F)
+    # Preserves standard punctuation and technical symbols
     emoji_pattern = re.compile(
         "["
-        "\U0001F300-\U0001FAF8"  # Emoji & Pictographs (ALL emoji blocks)
+        "\U0001F300-\U0001FAF8"  # Emoji & Pictographs (😀🎉🚀 etc.)
         "\U0001F900-\U0001F9FF"  # Supplemental Symbols and Pictographs
         "\U0001FA70-\U0001FAF8"  # Extended Pictographs
-        "\U00002600-\U000026FF"  # Miscellaneous Symbols (☁️, ⚡, ⌚, etc.)
-        "\U00002700-\U000027BF"  # Dingbats (✨, ✳, ✴, ❌, etc.)
-        "\U00002300-\U000023FF"  # Miscellaneous Technical
-        "\U00002000-\U0000206F"  # General Punctuation (includes ZWJ)
-        "\U000020A0-\U000020CF"  # Currency Symbols
-        "\U00002100-\U0000214F"  # Letterlike Symbols
-        "\U00002190-\U000021FF"  # Arrows
-        "\U00002200-\U000022FF"  # Mathematical Operators
-        "\U000025A0-\U000025FF"  # Geometric Shapes
-        "\U00002900-\U0000297F"  # Supplemental Arrows-B
-        "\U00002980-\U000029FF"  # Miscellaneous Mathematical Symbols-B
-        "\U00002A00-\U00002AFF"  # Supplemental Mathematical Operators
-        "\U00002B00-\U00002BFF"  # Miscellaneous Symbols and Arrows
-        "\U00003000-\U0000303F"  # CJK Symbols and Punctuation
-        "\U0001F1E6-\U0001F1FF"  # Regional Indicators (flags)
+        "\U0001F1E6-\U0001F1FF"  # Regional Indicators (flags 🇩🇪🇺🇸)
         "\U0000FE00-\U0000FE0F"  # Variation Selectors
         "\U0000200D"             # Zero Width Joiner
         "]+",
         flags=re.UNICODE
     )
 
-    # Remove emojis
-    text = emoji_pattern.sub('', text)
+    # Remove emojis and normalize whitespace ONLY where emojis were removed
+    # This preserves intentional spacing like in tree structures (├──)
+    def replace_and_normalize(match):
+        # Emoji was found and will be removed
+        # Check if there are multiple spaces around it
+        start_pos = match.start()
+        end_pos = match.end()
 
-    # Normalize whitespace: replace multiple spaces with single space
-    # BUT preserve indentation at start of lines
-    lines = text.split('\n')
-    normalized_lines = []
+        # Get surrounding context (if available)
+        before = text[max(0, start_pos-1):start_pos] if start_pos > 0 else ''
+        after = text[end_pos:min(len(text), end_pos+1)] if end_pos < len(text) else ''
 
-    for line in lines:
-        # Get leading whitespace (indentation)
-        leading_ws = ''
-        stripped = line.lstrip()
-        if stripped != line:
-            leading_ws = line[:len(line) - len(stripped)]
+        # If emoji is surrounded by spaces on both sides, leave one space
+        if before == ' ' and after == ' ':
+            return ' '
+        # Otherwise just remove the emoji
+        return ''
 
-        # Normalize spaces in the rest of the line (multiple spaces → single)
-        normalized = re.sub(r' {2,}', ' ', stripped)
-
-        # Recombine
-        normalized_lines.append(leading_ws + normalized)
-
-    return '\n'.join(normalized_lines)
+    return emoji_pattern.sub(replace_and_normalize, text)
 
 def remove_emojis_from_file(filepath: Path, keep_backup: bool = True) -> Tuple[bool, int]:
     """

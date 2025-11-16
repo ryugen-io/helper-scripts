@@ -10,19 +10,13 @@ import sys
 from pathlib import Path
 from typing import List, Tuple
 
-# ANSI Colors (Catppuccin Mocha)
-RED = '\033[38;2;243;139;168m'
-GREEN = '\033[38;2;166;227;161m'
-YELLOW = '\033[38;2;249;226;175m'
-BLUE = '\033[38;2;137;180;250m'
-MAUVE = '\033[38;2;203;166;247m'
-SAPPHIRE = '\033[38;2;116;199;236m'
-NC = '\033[0m'
+# Add .sys/theme to path for central theming
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parent
+sys.path.insert(0, str(REPO_ROOT / '.sys' / 'theme'))
 
-# Icons
-CHECK = ""
-CROSS = ""
-WARN = ""
+# Import central theme
+from theme import Colors, Icons
 
 
 class ShellLinter:
@@ -143,7 +137,7 @@ class ShellLinter:
 
 
 def main():
-    print(f"{MAUVE}[lint]{NC} Linting shell scripts with Python...")
+    print(f"{Colors.MAUVE}[lint]{Colors.NC} Linting shell scripts with Python...")
     print()
 
     script_dir = Path.cwd()
@@ -154,44 +148,44 @@ def main():
     passed = 0
 
     for script in shell_scripts:
-        print(f"{BLUE}Checking {NC}{script.name}")
+        print(f"{Colors.BLUE}Checking {Colors.NC}{script.name}")
 
         linter = ShellLinter(script)
         issues, warnings = linter.lint()
 
         # Print issues
         for issue in linter.issues:
-            print(f"  {RED}{CROSS}  {NC}{issue}")
+            print(f"  {Colors.RED}{Icons.CROSS}  {Colors.NC}{issue}")
             total_issues += 1
 
         # Print warnings
         for warning in linter.warnings:
-            print(f"  {YELLOW}{WARN}  {NC}{warning}")
+            print(f"  {Colors.YELLOW}{Icons.WARN}  {Colors.NC}{warning}")
             total_warnings += 1
 
         if not linter.issues and not linter.warnings:
-            print(f"  {GREEN}{CHECK}  {NC}Perfect! No issues found")
+            print(f"  {Colors.GREEN}{Icons.CHECK}  {Colors.NC}Perfect! No issues found")
             passed += 1
         elif not linter.issues:
-            print(f"  {GREEN}{CHECK}  {NC}No critical issues")
+            print(f"  {Colors.GREEN}{Icons.CHECK}  {Colors.NC}No critical issues")
             passed += 1
 
         print()
 
     # Summary
-    print(f"{GREEN}Summary:{NC}")
+    print(f"{Colors.GREEN}Summary:{Colors.NC}")
     print()
-    print(f"{BLUE}  Total scripts:     {NC}{len(shell_scripts)}")
-    print(f"{GREEN}  Passed:            {NC}{passed}")
-    print(f"{RED}  Critical issues:   {NC}{total_issues}")
-    print(f"{YELLOW}  Warnings:          {NC}{total_warnings}")
+    print(f"{Colors.BLUE}  Total scripts:     {Colors.NC}{len(shell_scripts)}")
+    print(f"{Colors.GREEN}  Passed:            {Colors.NC}{passed}")
+    print(f"{Colors.RED}  Critical issues:   {Colors.NC}{total_issues}")
+    print(f"{Colors.YELLOW}  Warnings:          {Colors.NC}{total_warnings}")
     print()
 
     if total_issues == 0:
-        print(f"{SAPPHIRE}  {NC}All shell scripts passed linting!")
+        print(f"{Colors.SAPPHIRE}  {Colors.NC}All shell scripts passed linting!")
         return 0
     else:
-        print(f"{RED}  {NC}Some scripts have critical issues")
+        print(f"{Colors.RED}  {Colors.NC}Some scripts have critical issues")
         return 1
 
 

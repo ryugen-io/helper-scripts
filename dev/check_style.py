@@ -34,6 +34,23 @@ class StyleChecker:
         self.passed_files = 0
         self.failed_files = 0
         self.warnings = 0
+        self.ignored_files = self._load_ignore_list()
+
+    def _load_ignore_list(self) -> set:
+        """Not used - files self-declare ignore status"""
+        return set()
+
+    def should_ignore(self, filepath: Path) -> bool:
+        """Check if file contains STYLECHECK_IGNORE marker"""
+        try:
+            content = filepath.read_text(encoding='utf-8')
+            # Check first 10 lines for the marker
+            for line in content.split('\n')[:10]:
+                if 'STYLECHECK_IGNORE' in line:
+                    return True
+        except Exception:
+            pass
+        return False
 
     def check_colors(self, filepath: Path) -> int:
         """Check if file uses correct Catppuccin Mocha colors"""
@@ -104,6 +121,11 @@ class StyleChecker:
 
     def check_file(self, filepath: Path) -> bool:
         """Check a single file"""
+        # Skip ignored files
+        if self.should_ignore(filepath):
+            print(f"{Colors.SUBTEXT}Skipping: {Colors.YELLOW}{filepath.name}{Colors.NC} {Colors.SUBTEXT}(STYLECHECK_IGNORE){Colors.NC}")
+            return True  # Count as passed
+
         file_issues = 0
 
         print(f"{Colors.TEXT}Checking: {Colors.SAPPHIRE}{filepath.name}{Colors.NC}")

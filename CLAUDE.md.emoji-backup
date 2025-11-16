@@ -45,52 +45,52 @@ This repository provides a collection of standardized, reusable shell scripts fo
 
 ```
 helper-scripts/
-├── .github/ # GitHub Actions and workflows
-│ ├── workflows/ # Workflow definitions
-│ │ ├── claude.yml # Claude AI integration (issue/PR comments)
-│ │ ├── claude-code-review.yml # Automatic PR reviews
-│ │ ├── check-skip.yml # Skip system validation
-│ │ ├── update-readme.yml # Auto-update README
-│ │ ├── scripts/ # Workflow helper scripts
-│ │ └── logs/ # Workflow execution logs (persistent)
-│ └── skips/ # Skip system configuration
-│ ├── .skip.example # Example skip file
-│ └── SKIP_SYSTEM.md # Skip system documentation
+├── .github/                    # GitHub Actions and workflows
+│   ├── workflows/             # Workflow definitions
+│   │   ├── claude.yml         # Claude AI integration (issue/PR comments)
+│   │   ├── claude-code-review.yml  # Automatic PR reviews
+│   │   ├── check-skip.yml     # Skip system validation
+│   │   ├── update-readme.yml  # Auto-update README
+│   │   ├── scripts/           # Workflow helper scripts
+│   │   └── logs/              # Workflow execution logs (persistent)
+│   └── skips/                 # Skip system configuration
+│       ├── .skip.example      # Example skip file
+│       └── SKIP_SYSTEM.md     # Skip system documentation
 │
-├── .sys/ # System/configuration files
-│ ├── env/ # Environment configuration
-│ │ └── .env.example # Environment template
-│ └── theme/ # Centralized theming
-│ ├── theme.sh # Bash theme (colors & icons)
-│ ├── theme.py # Python theme (colors & icons)
-│ └── THEMING.md # Theming guide
+├── .sys/                      # System/configuration files
+│   ├── env/                   # Environment configuration
+│   │   └── .env.example       # Environment template
+│   └── theme/                 # Centralized theming
+│       ├── theme.sh           # Bash theme (colors & icons)
+│       ├── theme.py           # Python theme (colors & icons)
+│       └── THEMING.md         # Theming guide
 │
-├── dev/ # Development tools
-│ ├── check_style.sh # Style checker
-│ ├── format.sh # Code formatter
-│ ├── lines.sh # Line counter (Rust-focused)
-│ ├── lint.sh # Shell script linter
-│ ├── shellcheck.py # Python-based shellcheck wrapper
-│ ├── test.py # Test runner (Python)
-│ └── test.bats # BATS test suite
+├── dev/                       # Development tools
+│   ├── check_style.sh         # Style checker
+│   ├── format.sh              # Code formatter
+│   ├── lines.sh               # Line counter (Rust-focused)
+│   ├── lint.sh                # Shell script linter
+│   ├── shellcheck.py          # Python-based shellcheck wrapper
+│   ├── test.py                # Test runner (Python)
+│   └── test.bats              # BATS test suite
 │
-├── docker/ # Docker container management
-│ ├── start.sh # Start container
-│ ├── stop.sh # Stop container
-│ ├── status.sh # Show container status & stats
-│ ├── logs.sh # Check logs for errors/warnings
-│ └── rebuild.sh # Rebuild image & recreate container
+├── docker/                    # Docker container management
+│   ├── start.sh               # Start container
+│   ├── stop.sh                # Stop container
+│   ├── status.sh              # Show container status & stats
+│   ├── logs.sh                # Check logs for errors/warnings
+│   └── rebuild.sh             # Rebuild image & recreate container
 │
-├── utils/ # Utility scripts
-│ ├── fix_nerdfonts.py # Fix Nerd Font icon encoding
-│ ├── remove_emojis.py # Remove emojis from files
-│ ├── remove_emojis.sh # Shell wrapper for emoji removal
-│ └── update_readme.py # Auto-generate README
+├── utils/                     # Utility scripts
+│   ├── fix_nerdfonts.py       # Fix Nerd Font icon encoding
+│   ├── remove_emojis.py       # Remove emojis from files
+│   ├── remove_emojis.sh       # Shell wrapper for emoji removal
+│   └── update_readme.py       # Auto-generate README
 │
-├── install.sh # Interactive installation script
-├── README.md # User-facing documentation
-├── claude.md # Generated file concatenation (lowercase)
-└── CLAUDE.md # This file - AI assistant guide
+├── install.sh                 # Interactive installation script
+├── README.md                  # User-facing documentation
+├── claude.md                  # Generated file concatenation (lowercase)
+└── CLAUDE.md                  # This file - AI assistant guide
 ```
 
 ---
@@ -203,8 +203,8 @@ Analyzes Rust source files and counts lines of code.
 
 **Usage:**
 ```bash
-./dev/lines.sh # Use default 200 line threshold
-./dev/lines.sh 150 # Use custom threshold
+./dev/lines.sh        # Use default 200 line threshold
+./dev/lines.sh 150    # Use custom threshold
 ```
 
 ### lint.sh
@@ -272,8 +272,8 @@ Checks container logs for errors and warnings.
 
 **Usage:**
 ```bash
-./docker/logs.sh # Check last 100 lines
-./docker/logs.sh 500 # Check last 500 lines
+./docker/logs.sh        # Check last 100 lines
+./docker/logs.sh 500    # Check last 500 lines
 ```
 
 ### rebuild.sh
@@ -301,7 +301,8 @@ Fixes Nerd Font icon encoding issues in shell scripts.
 **Example:**
 ```bash
 # Before
-readonly CHECK=""
+readonly CHECK=""
+
 # After
 readonly CHECK=""  # \uf00c
 ```
@@ -576,9 +577,9 @@ readonly DOCKERFILE_PATH="./Dockerfile"             User's Dockerfile path
 ### When Creating New Scripts
 
 1. **Add script to appropriate directory**:
-   - Docker management `docker/`
-   - Development tools `dev/`
-   - Utilities `utils/`
+   - Docker management  `docker/`
+   - Development tools  `dev/`
+   - Utilities  `utils/`
 
 2. **Include descriptive comment on line 2**:
    ```bash

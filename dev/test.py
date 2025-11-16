@@ -8,18 +8,13 @@ import subprocess
 import sys
 from pathlib import Path
 
-# Catppuccin Mocha colors
-RED = '\033[38;2;243;139;168m'
-GREEN = '\033[38;2;166;227;161m'
-YELLOW = '\033[38;2;249;226;175m'
-BLUE = '\033[38;2;137;180;250m'
-MAUVE = '\033[38;2;203;166;247m'
-SAPPHIRE = '\033[38;2;116;199;236m'
-TEXT = '\033[38;2;205;214;244m'
-NC = '\033[0m'
+# Add .sys/theme to path for central theming
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parent
+sys.path.insert(0, str(REPO_ROOT / '.sys' / 'theme'))
 
-CHECK = ""
-CROSS = ""
+# Import central theme
+from theme import Colors, Icons
 
 
 class TestRunner:
@@ -54,39 +49,39 @@ class TestRunner:
 
     def run_tests(self):
         """Run all registered tests"""
-        print(f"{MAUVE}[test]{NC} Running shell script tests...")
+        print(f"{Colors.MAUVE}[test]{Colors.NC} Running shell script tests...")
         print()
 
         for name, test_func in self.tests:
             try:
                 success, message = test_func()
                 if success:
-                    print(f"{GREEN}{CHECK}  {NC}{name}")
+                    print(f"{Colors.GREEN}{Icons.CHECK}  {Colors.NC}{name}")
                     self.passed += 1
                 else:
-                    print(f"{RED}{CROSS}  {NC}{name}")
+                    print(f"{Colors.RED}{Icons.CROSS}  {Colors.NC}{name}")
                     if message:
-                        print(f"{YELLOW}     {NC}{message}")
+                        print(f"{Colors.YELLOW}     {Colors.NC}{message}")
                     self.failed += 1
             except Exception as e:
-                print(f"{RED}{CROSS}  {NC}{name}")
-                print(f"{YELLOW}     {NC}Exception: {e}")
+                print(f"{Colors.RED}{Icons.CROSS}  {Colors.NC}{name}")
+                print(f"{Colors.YELLOW}     {Colors.NC}Exception: {e}")
                 self.failed += 1
 
         # Summary
         print()
-        print(f"{GREEN}Summary:{NC}")
+        print(f"{Colors.GREEN}Summary:{Colors.NC}")
         print()
-        print(f"{GREEN}  Passed:  {NC}{self.passed}")
-        print(f"{RED}  Failed:  {NC}{self.failed}")
-        print(f"{BLUE}  Total:   {NC}{self.passed + self.failed}")
+        print(f"{Colors.GREEN}  Passed:  {Colors.NC}{self.passed}")
+        print(f"{Colors.RED}  Failed:  {Colors.NC}{self.failed}")
+        print(f"{Colors.BLUE}  Total:   {Colors.NC}{self.passed + self.failed}")
         print()
 
         if self.failed == 0:
-            print(f"{SAPPHIRE}  {NC}All tests passed!")
+            print(f"{Colors.SAPPHIRE}  {Colors.NC}All tests passed!")
             return 0
         else:
-            print(f"{RED}  {NC}{self.failed} test(s) failed")
+            print(f"{Colors.RED}  {Colors.NC}{self.failed} test(s) failed")
             return 1
 
 
