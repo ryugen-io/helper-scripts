@@ -4,22 +4,10 @@
 set -e
 set -o pipefail
 
-# Catppuccin Mocha color palette (24-bit true color)
-readonly RED='\033[38;2;243;139;168m'        # #f38ba8 - Errors
-readonly GREEN='\033[38;2;166;227;161m'      # #a6e3a1 - Success
-readonly YELLOW='\033[38;2;249;226;175m'     # #f9e2af - Warnings
-readonly BLUE='\033[38;2;137;180;250m'       # #89b4fa - Info
-readonly MAUVE='\033[38;2;203;166;247m'      # #cba6f7 - Headers
-readonly SAPPHIRE='\033[38;2;116;199;236m'   # #74c7ec - Success highlights
-readonly TEXT='\033[38;2;205;214;244m'       # #cdd6f4 - Normal text
-readonly NC='\033[0m'                         # No Color
-
-# Nerd Font Icons - Unicode characters for visual feedback
-readonly CHECK=""     # Success icon
-readonly CROSS=""     # Error icon
-readonly WARN=""      # Warning icon
-readonly INFO=""      # Info icon
-readonly MAGIC="✨"    # Sparkles for formatting
+# Source central theme
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+source "$REPO_ROOT/.sys/theme/theme.sh"
 
 # Script configuration
 readonly SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -42,31 +30,6 @@ fi
 # -sr: Add space after redirect operators
 readonly SHFMT_OPTS="-i 4 -bn -ci -sr"
 
-# Logging functions for consistent output formatting
-log_success() {
-    # Display success message in green with check icon
-    echo -e "${GREEN}${CHECK}${NC}  $1"
-}
-
-log_error() {
-    # Display error message in red with cross icon (stderr)
-    echo -e "${RED}${CROSS}${NC}  $1" >&2
-}
-
-log_warn() {
-    # Display warning message in yellow with warning icon
-    echo -e "${YELLOW}${WARN}${NC}  $1"
-}
-
-log_info() {
-    # Display informational message in blue with info icon
-    echo -e "${BLUE}${INFO}${NC}  $1"
-}
-
-log_header() {
-    # Display header in mauve color
-    echo -e "${MAUVE}$1${NC}"
-}
 
 # Check if shfmt is installed on the system
 check_shfmt() {
