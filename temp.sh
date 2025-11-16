@@ -4,3 +4,4 @@
 # LINTCHECK_IGNORE - Temporary test file
 
 echo "Testing workflow log persistence"
+# test change
