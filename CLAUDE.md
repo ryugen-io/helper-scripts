@@ -239,7 +239,7 @@ Location: `dev/`
 ./dev/check_style.py --recursive
 
 # 4. Lint shell scripts
-./dev/lint.py
+./dev/lint.py --recursive
 
 # 5. Fix Nerd Font icons
 ./utils/fix_nerdfonts.py
@@ -835,7 +835,7 @@ cp /path/to/file /path/to/repo/.backups/file.backup-$(date +%Y%m%d-%H%M%S)
    ./dev/format.py --check --recursive
    ./dev/pycompile.py --recursive
    ./dev/check_style.py --recursive
-   ./dev/lint.py
+   ./dev/lint.py --recursive
    ./utils/fix_nerdfonts.py
    ./utils/remove_emojis.py
    ```
@@ -860,7 +860,7 @@ cp /path/to/file /path/to/repo/.backups/file.backup-$(date +%Y%m%d-%H%M%S)
 ./dev/format.py --check --recursive
 ./dev/pycompile.py --recursive
 ./dev/check_style.py --recursive
-./dev/lint.py
+./dev/lint.py --recursive
 ./utils/fix_nerdfonts.py
 ./utils/remove_emojis.py
 
