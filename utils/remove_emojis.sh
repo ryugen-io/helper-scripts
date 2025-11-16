@@ -54,111 +54,51 @@ remove_emojis_from_file() {
     # Create backup
     cp "$file" "$backup"
 
-    # Remove all emoji and special Unicode characters
-    # This regex matches:
-    # - Emoji characters (U+1F300-U+1F9FF)
-    # - Supplementary emoji (U+2600-U+27BF)
-    # - Dingbats (U+2700-U+27BF)
-    # - Miscellaneous symbols (U+2300-U+23FF, U+2B50, etc.)
-    # - Variation selectors (U+FE00-U+FE0F)
-    # - Zero-width joiners (U+200D)
-    # - Regional indicators (U+1F1E6-U+1F1FF)
+    # Remove ONLY emoji characters, NOT Nerd Font icons!
+    # Nerd Font icons are in Private Use Area (PUA): U+E000-U+F8FF, U+F0000-U+FFFFD
+    # We MUST NOT remove these!
+    #
+    # This regex matches ONLY:
+    # - Emoji characters (U+1F300-U+1F9FF) - Color emojis
+    # - Miscellaneous symbols (U+2600-U+27BF) - Sun, umbrella, etc.
+    # - Dingbats (U+2700-U+27BF) - Scissors, airplane, etc.
+    # - Regional indicators (U+1F1E6-U+1F1FF) - Flag emojis
+    # - Variation selectors (U+FE00-U+FE0F) - Emoji style selectors
+    # - Zero-width joiners (U+200D) - Emoji combining
 
     # Use Perl for better Unicode support
     if command -v perl &> /dev/null; then
-        # Perl regex to remove emojis and symbols
+        # Perl regex to remove ONLY emojis, NOT Nerd Font icons!
+        # Nerd Fonts use Private Use Area (E000-F8FF) which we preserve
         perl -i -pe '
-            s/[\x{1F300}-\x{1F9FF}]//g;    # Emoji & Pictographs
-            s/[\x{1F600}-\x{1F64F}]//g;    # Emoticons
-            s/[\x{1F680}-\x{1F6FF}]//g;    # Transport & Map
-            s/[\x{2600}-\x{27BF}]//g;      # Misc symbols
-            s/[\x{1F1E6}-\x{1F1FF}]//g;    # Flags
-            s/[\x{2300}-\x{23FF}]//g;      # Misc Technical
-            s/[\x{2B50}]//g;               # Star
-            s/[\x{FE00}-\x{FE0F}]//g;      # Variation selectors
-            s/[\x{200D}]//g;               # Zero-width joiner
-            s/[\x{231A}-\x{231B}]//g;      # Watch
-            s/[\x{23E9}-\x{23EC}]//g;      # Play buttons
-            s/[\x{23F0}]//g;               # Alarm clock
-            s/[\x{23F3}]//g;               # Hourglass
-            s/[\x{25FD}-\x{25FE}]//g;      # Squares
-            s/[\x{2614}-\x{2615}]//g;      # Umbrella, coffee
-            s/[\x{2648}-\x{2653}]//g;      # Zodiac signs
-            s/[\x{267F}]//g;               # Wheelchair
-            s/[\x{2693}]//g;               # Anchor
-            s/[\x{26A1}]//g;               # Lightning
-            s/[\x{26AA}-\x{26AB}]//g;      # Circles
-            s/[\x{26BD}-\x{26BE}]//g;      # Soccer, baseball
-            s/[\x{26C4}-\x{26C5}]//g;      # Snowman, sun
-            s/[\x{26CE}]//g;               # Ophiuchus
-            s/[\x{26D4}]//g;               # No entry
-            s/[\x{26EA}]//g;               # Church
-            s/[\x{26F2}-\x{26F3}]//g;      # Fountain, golf
-            s/[\x{26F5}]//g;               # Sailboat
-            s/[\x{26FA}]//g;               # Tent
-            s/[\x{26FD}]//g;               # Fuel pump
-            s/[\x{2705}]//g;               # Checkmark
-            s/[\x{270A}-\x{270B}]//g;      # Fists
-            s/[\x{2728}]//g;               # Sparkles
-            s/[\x{274C}]//g;               # Cross mark
-            s/[\x{274E}]//g;               # Cross mark button
-            s/[\x{2753}-\x{2755}]//g;      # Question marks
-            s/[\x{2757}]//g;               # Exclamation
-            s/[\x{2795}-\x{2797}]//g;      # Plus, minus
-            s/[\x{27B0}]//g;               # Curly loop
-            s/[\x{27BF}]//g;               # Double curly loop
-            s/[\x{2B1B}-\x{2B1C}]//g;      # Squares
-            s/[\x{1F004}]//g;              # Mahjong
-            s/[\x{1F0CF}]//g;              # Joker
-            s/[\x{1F170}-\x{1F171}]//g;    # A, B buttons
-            s/[\x{1F17E}-\x{1F17F}]//g;    # O button
-            s/[\x{1F18E}]//g;              # AB button
-            s/[\x{1F191}-\x{1F19A}]//g;    # Squared CL, COOL, etc
-            s/[\x{1F201}-\x{1F202}]//g;    # Squared Katakana
-            s/[\x{1F21A}]//g;              # Squared CJK
-            s/[\x{1F22F}]//g;              # Squared CJK
-            s/[\x{1F232}-\x{1F23A}]//g;    # Squared CJK
-            s/[\x{1F250}-\x{1F251}]//g;    # Circled CJK
-            s/[\x{1F300}-\x{1F320}]//g;    # Weather, celestial
-            s/[\x{1F32D}-\x{1F335}]//g;    # Food, plants
-            s/[\x{1F337}-\x{1F37C}]//g;    # More food
-            s/[\x{1F37E}-\x{1F393}]//g;    # Drinks, objects
-            s/[\x{1F3A0}-\x{1F3CA}]//g;    # Activities
-            s/[\x{1F3CF}-\x{1F3D3}]//g;    # Sports
-            s/[\x{1F3E0}-\x{1F3F0}]//g;    # Buildings
-            s/[\x{1F3F4}]//g;              # Flag
-            s/[\x{1F3F8}-\x{1F43E}]//g;    # Animals, nature
-            s/[\x{1F440}]//g;              # Eyes
-            s/[\x{1F442}-\x{1F4FC}]//g;    # Body parts, objects
-            s/[\x{1F4FF}-\x{1F53D}]//g;    # More objects
-            s/[\x{1F54B}-\x{1F54E}]//g;    # Religious symbols
-            s/[\x{1F550}-\x{1F567}]//g;    # Clocks
-            s/[\x{1F57A}]//g;              # Dancing
-            s/[\x{1F595}-\x{1F596}]//g;    # Hand gestures
-            s/[\x{1F5A4}]//g;              # Black heart
-            s/[\x{1F5FB}-\x{1F64F}]//g;    # Symbols, hands
-            s/[\x{1F6A3}]//g;              # Rowboat
-            s/[\x{1F6B4}-\x{1F6B6}]//g;    # Activities
-            s/[\x{1F6C0}-\x{1F6C5}]//g;    # Bathroom
-            s/[\x{1F6CC}]//g;              # Sleeping
-            s/[\x{1F6D0}]//g;              # Place of worship
-            s/[\x{1F6D1}-\x{1F6D2}]//g;    # Shopping cart
-            s/[\x{1F6D5}]//g;              # Hindu temple
-            s/[\x{1F6EB}-\x{1F6EC}]//g;    # Airplane
-            s/[\x{1F6F4}-\x{1F6FC}]//g;    # Scooter, etc
-            s/[\x{1F7E0}-\x{1F7EB}]//g;    # Geometric shapes
-            s/[\x{1F90C}-\x{1F93A}]//g;    # Hands, people
-            s/[\x{1F93C}-\x{1F945}]//g;    # Activities
-            s/[\x{1F947}-\x{1F978}]//g;    # Awards, food
-            s/[\x{1F97A}-\x{1F9CB}]//g;    # Faces, people
-            s/[\x{1F9CD}-\x{1F9FF}]//g;    # More people
-            s/[\x{1FA70}-\x{1FA74}]//g;    # Medical
-            s/[\x{1FA78}-\x{1FA7A}]//g;    # Medical
-            s/[\x{1FA80}-\x{1FA86}]//g;    # Yoyo, etc
-            s/[\x{1FA90}-\x{1FAA8}]//g;    # Body parts
-            s/[\x{1FAB0}-\x{1FAB6}]//g;    # Food
-            s/[\x{1FAC0}-\x{1FAC2}]//g;    # People
-            s/[\x{1FAD0}-\x{1FAD6}]//g;    # Food
+            # Main emoji ranges - ONLY these!
+            s/[\x{1F300}-\x{1F9FF}]//g;    # Emoji & Pictographs (ALL emoji blocks)
+            s/[\x{2600}-\x{26FF}]//g;      # Miscellaneous Symbols (sun, stars, etc.)
+            s/[\x{2700}-\x{27BF}]//g;      # Dingbats (scissors, checkmarks, etc.)
+            s/[\x{1F1E6}-\x{1F1FF}]//g;    # Regional Indicators (flags)
+            s/[\x{FE00}-\x{FE0F}]//g;      # Variation Selectors (emoji style)
+            s/[\x{200D}]//g;               # Zero Width Joiner (emoji combining)
+            s/[\x{2B50}]//g;               # Star emoji
+            s/[\x{231A}-\x{231B}]//g;      # Watch, hourglass
+            s/[\x{2328}]//g;               # Keyboard
+            s/[\x{23CF}]//g;               # Eject button
+            s/[\x{23E9}-\x{23F3}]//g;      # Media control symbols
+            s/[\x{23F8}-\x{23FA}]//g;      # More media controls
+            s/[\x{24C2}]//g;               # Circled M
+            s/[\x{25AA}-\x{25AB}]//g;      # Black squares
+            s/[\x{25B6}]//g;               # Play button
+            s/[\x{25C0}]//g;               # Reverse button
+            s/[\x{25FB}-\x{25FE}]//g;      # White/black squares
+            s/[\x{2934}-\x{2935}]//g;      # Arrows
+            s/[\x{2B05}-\x{2B07}]//g;      # Arrow emojis
+            s/[\x{2B1B}-\x{2B1C}]//g;      # Black/white large squares
+            s/[\x{3030}]//g;               # Wavy dash
+            s/[\x{303D}]//g;               # Part alternation mark
+            s/[\x{3297}]//g;               # Circled ideograph congratulation
+            s/[\x{3299}]//g;               # Circled ideograph secret
+
+            # DO NOT TOUCH: E000-F8FF (Private Use Area - Nerd Fonts!)
+            # DO NOT TOUCH: F0000-FFFFD (Supplementary Private Use Area)
         ' "$file"
     else
         # Fallback to sed with basic Unicode support
