@@ -24,7 +24,6 @@ SYS_DIR="${SYS_DIR:-.sys}"
 # CUSTOMIZE THIS - Set your container name here
 readonly CONTAINER_NAME="your-container-name"
 
-
 # Main execution function
 main() {
     echo ""

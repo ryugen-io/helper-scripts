@@ -18,27 +18,27 @@ count_lines() {
     local ext="${file##*.}"
 
     # Count total lines
-    local total=$(wc -l < "$file" 2>/dev/null || echo "0")
+    local total=$(wc -l < "$file" 2> /dev/null || echo "0")
 
     # Count comment-only lines based on file type
     local comments=0
     case "$ext" in
         sh)
             # Shell: lines starting with #
-            comments=$(grep -cE '^\s*#' "$file" 2>/dev/null || echo "0")
+            comments=$(grep -cE '^\s*#' "$file" 2> /dev/null || echo "0")
             ;;
         py)
             # Python: lines starting with #
-            comments=$(grep -cE '^\s*#' "$file" 2>/dev/null || echo "0")
+            comments=$(grep -cE '^\s*#' "$file" 2> /dev/null || echo "0")
             ;;
-        yml|yaml)
+        yml | yaml)
             # YAML: lines starting with #
-            comments=$(grep -cE '^\s*#' "$file" 2>/dev/null || echo "0")
+            comments=$(grep -cE '^\s*#' "$file" 2> /dev/null || echo "0")
             ;;
     esac
 
     # Count blank lines
-    local blank=$(grep -cE '^\s*$' "$file" 2>/dev/null || echo "0")
+    local blank=$(grep -cE '^\s*$' "$file" 2> /dev/null || echo "0")
 
     # Code lines = total - comments - blank
     local code=$((total - comments - blank))
@@ -125,7 +125,7 @@ main() {
 
     if [ $# -eq 0 ]; then
         # Get files changed in this commit/PR
-        mapfile -t files < <(git diff --name-only HEAD~1 2>/dev/null || git ls-files)
+        mapfile -t files < <(git diff --name-only HEAD~1 2> /dev/null || git ls-files)
     else
         files=("$@")
     fi

@@ -33,61 +33,61 @@ total_issues=0
 # Check each shell script from configured directories
 IFS=',' read -ra DIRS <<< "$SCRIPT_DIRS"
 for dir in "${DIRS[@]}"; do
-    dir=$(echo "$dir" | xargs)  # Trim whitespace
+    dir=$(echo "$dir" | xargs) # Trim whitespace
     if [ ! -d "$REPO_ROOT/$dir" ]; then
         continue
     fi
 
     for script in "$REPO_ROOT/$dir"/*.sh; do
-    [ -f "$script" ] || continue
-    total_scripts=$((total_scripts + 1))
+        [ -f "$script" ] || continue
+        total_scripts=$((total_scripts + 1))
 
-    echo -e "${BLUE}Checking ${NC}$script"
-    issues=0
+        echo -e "${BLUE}Checking ${NC}$script"
+        issues=0
 
-    # 1. Syntax check
-    if ! bash -n "$script" 2>/dev/null; then
-        log_error "Syntax error detected"
-        issues=$((issues + 1))
-    fi
+        # 1. Syntax check
+        if ! bash -n "$script" 2> /dev/null; then
+            log_error "Syntax error detected"
+            issues=$((issues + 1))
+        fi
 
-    # 2. Check for set -e or set -o pipefail
-    if ! grep -q "set -e" "$script" && ! grep -q "set -o errexit" "$script"; then
-        log_warn "Missing 'set -e' (consider adding for safety)"
-    fi
+        # 2. Check for set -e or set -o pipefail
+        if ! grep -q "set -e" "$script" && ! grep -q "set -o errexit" "$script"; then
+            log_warn "Missing 'set -e' (consider adding for safety)"
+        fi
 
-    if ! grep -q "set -o pipefail" "$script"; then
-        log_warn "Missing 'set -o pipefail' (consider adding for pipe safety)"
-    fi
+        if ! grep -q "set -o pipefail" "$script"; then
+            log_warn "Missing 'set -o pipefail' (consider adding for pipe safety)"
+        fi
 
-    # 3. Check for shebang
-    if ! head -n 1 "$script" | grep -q "^#!"; then
-        log_error "Missing shebang line"
-        issues=$((issues + 1))
-    fi
+        # 3. Check for shebang
+        if ! head -n 1 "$script" | grep -q "^#!"; then
+            log_error "Missing shebang line"
+            issues=$((issues + 1))
+        fi
 
-    # 4. Check for unquoted variables (disabled - too many false positives)
-    # This produces warnings for safe cases like echo -e "${COLOR}text${NC}"
-    # Manual review is better than automated checking for this
+        # 4. Check for unquoted variables (disabled - too many false positives)
+        # This produces warnings for safe cases like echo -e "${COLOR}text${NC}"
+        # Manual review is better than automated checking for this
 
-    # 5. Check executable permission
-    if [ ! -x "$script" ]; then
-        log_warn "Script is not executable (chmod +x $script)"
-    fi
+        # 5. Check executable permission
+        if [ ! -x "$script" ]; then
+            log_warn "Script is not executable (chmod +x $script)"
+        fi
 
-    # 6. Check for 'local' in functions (skip - too many false positives)
-    # Simple logging functions don't need local variables
-    # This check is better handled by the Python linter (shellcheck_test.py)
+        # 6. Check for 'local' in functions (skip - too many false positives)
+        # Simple logging functions don't need local variables
+        # This check is better handled by the Python linter (shellcheck_test.py)
 
-    if [ $issues -eq 0 ]; then
-        log_success "Passed basic linting"
-        passed_scripts=$((passed_scripts + 1))
-    else
-        log_error "$issues critical issue(s) found"
-        total_issues=$((total_issues + issues))
-    fi
+        if [ $issues -eq 0 ]; then
+            log_success "Passed basic linting"
+            passed_scripts=$((passed_scripts + 1))
+        else
+            log_error "$issues critical issue(s) found"
+            total_issues=$((total_issues + issues))
+        fi
 
-    echo ""
+        echo ""
     done
 done
 
@@ -100,7 +100,7 @@ for script in "$REPO_ROOT"/*.sh; do
     issues=0
 
     # 1. Syntax check
-    if ! bash -n "$script" 2>/dev/null; then
+    if ! bash -n "$script" 2> /dev/null; then
         log_error "Syntax error detected"
         issues=$((issues + 1))
     fi

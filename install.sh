@@ -128,7 +128,7 @@ select_scripts() {
 
     for i in "${!scripts[@]}"; do
         IFS=':' read -r script desc <<< "${scripts[$i]}"
-        printf "${SUBTEXT}  %d)${NC} %-30s ${SUBTEXT}%s${NC}\n" $((i+1)) "$script" "$desc"
+        printf "${SUBTEXT}  %d)${NC} %-30s ${SUBTEXT}%s${NC}\n" $((i + 1)) "$script" "$desc"
     done
 
     echo ""
@@ -158,7 +158,7 @@ select_scripts() {
     else
         for num in $selection; do
             if [[ "$num" =~ ^[0-9]+$ ]] && [ "$num" -ge 1 ] && [ "$num" -le "${#scripts[@]}" ]; then
-                IFS=':' read -r script _ <<< "${scripts[$((num-1))]}"
+                IFS=':' read -r script _ <<< "${scripts[$((num - 1))]}"
                 arr+=("$script")
             fi
         done

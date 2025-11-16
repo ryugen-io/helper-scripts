@@ -39,7 +39,7 @@ check_dependencies() {
     local missing=()
 
     for cmd in find wc grep awk; do
-        if ! command -v "$cmd" >/dev/null 2>&1; then
+        if ! command -v "$cmd" > /dev/null 2>&1; then
             missing+=("$cmd")
         fi
     done
@@ -72,7 +72,7 @@ count_lines() {
 # Analyze files with threshold warnings
 analyze_files() {
     local limit=$1
-    local yellow_threshold=$((limit * 80 / 100))  # 80% of limit
+    local yellow_threshold=$((limit * 80 / 100)) # 80% of limit
 
     local rs_files
     rs_files=$(find "$SCRIPT_DIR" -name "*.rs" -not -path "*/target/*")
