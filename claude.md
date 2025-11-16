@@ -138,7 +138,7 @@ Free to use and modify.
 
 ## File: THEMING.md
 
-**Path:** `THEMING.md`
+**Path:** `.sys/THEMING.md`
 
 ```md
 # Theming Guide
