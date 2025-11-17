@@ -63,6 +63,15 @@ def command_exists(cmd: str) -> bool:
         return False
 
 
+def cargo_auditable_exists() -> bool:
+    """Check if cargo auditable subcommand exists"""
+    try:
+        subprocess.run(['cargo', 'auditable', '--version'], capture_output=True, check=True)
+        return True
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return False
+
+
 def check_requirements(config: dict) -> bool:
     """Check if required tools are installed"""
     log_info("Checking requirements...")
@@ -77,7 +86,7 @@ def check_requirements(config: dict) -> bool:
             missing.append('trunk')
 
     if config.get('CARGO_AUDITABLE', 'true') == 'true':
-        if not command_exists('cargo-auditable'):
+        if not cargo_auditable_exists():
             missing.append('cargo-auditable')
 
     if missing:
@@ -203,21 +212,28 @@ def build_backend(config: dict, skip_format: bool = False) -> bool:
             return False
 
     use_auditable = config.get('CARGO_AUDITABLE', 'true') == 'true'
-    build_cmd = 'cargo-auditable' if use_auditable else 'cargo'
     server_binary = config['SERVER_BINARY']
 
     log_info("Building backend (dev profile)...")
     try:
-        subprocess.run([build_cmd, 'build', '--bin', server_binary],
-                       cwd=REPO_ROOT, check=True)
+        if use_auditable:
+            subprocess.run(['cargo', 'auditable', 'build', '--bin', server_binary],
+                           cwd=REPO_ROOT, check=True)
+        else:
+            subprocess.run(['cargo', 'build', '--bin', server_binary],
+                           cwd=REPO_ROOT, check=True)
     except subprocess.CalledProcessError:
         log_error("Backend dev build failed")
         return False
 
     log_info("Building backend (release profile)...")
     try:
-        subprocess.run([build_cmd, 'build', '--release', '--bin', server_binary],
-                       cwd=REPO_ROOT, check=True)
+        if use_auditable:
+            subprocess.run(['cargo', 'auditable', 'build', '--release', '--bin', server_binary],
+                           cwd=REPO_ROOT, check=True)
+        else:
+            subprocess.run(['cargo', 'build', '--release', '--bin', server_binary],
+                           cwd=REPO_ROOT, check=True)
     except subprocess.CalledProcessError:
         log_error("Backend release build failed")
         return False
