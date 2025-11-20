@@ -9,10 +9,10 @@ from pathlib import Path
 from typing import List, Tuple
 import py_compile
 
-# Add .sys/theme to path for central theming
+# Add sys/theme to path for central theming
 SCRIPT_DIR = Path(__file__).resolve().parent
-REPO_ROOT = SCRIPT_DIR.parent
-sys.path.insert(0, str(REPO_ROOT / '.sys' / 'theme'))
+REPO_ROOT = SCRIPT_DIR.parent.parent
+sys.path.insert(0, str(REPO_ROOT / 'sys' / 'theme'))
 
 from theme import (  # noqa: E402
     Colors, Icons, log_success, log_error, log_warn, log_info
@@ -20,25 +20,21 @@ from theme import (  # noqa: E402
 
 
 def load_env_config(repo_root: Path) -> dict:
-    """Load configuration from .env file"""
-    config = {
-        'SYS_DIR': '.sys',
-        'GITHUB_DIR': '.github',
-        'SCRIPT_DIRS': 'docker,dev,utils'
-    }
+    """Load configuration from sys/env/.env.dev file"""
+    env_file = repo_root / 'sys' / 'env' / '.env.dev'
 
-    # Try .sys/env/.env first, fallback to .sys/env/.env.example
-    sys_env_dir = repo_root / config['SYS_DIR'] / 'env'
-    for env_name in ['.env', '.env.example']:
-        env_file = sys_env_dir / env_name
-        if env_file.exists():
-            with open(env_file, 'r') as f:
-                for line in f:
-                    line = line.strip()
-                    if line and not line.startswith('#') and '=' in line:
-                        key, value = line.split('=', 1)
-                        config[key] = value
-            break
+    if not env_file.exists():
+        raise FileNotFoundError(f"config not found: {env_file}")
+
+    config = {}
+    with open(env_file, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                key, value = line.split('=', 1)
+                # Remove quotes if present
+                value = value.strip('"').strip("'")
+                config[key] = value
 
     return config
 
@@ -81,7 +77,7 @@ class PyCompileChecker:
         success, error_msg = self.compile_file(filepath)
 
         if success:
-            log_success("  Compilation successful")
+            log_success("  compilation successful")
             self.passed_files += 1
             return True
         else:
@@ -102,15 +98,15 @@ class PyCompileChecker:
             pattern = '**/*.py' if recursive else '*.py'
             files.extend(base_path.glob(pattern))
 
-        # Filter out __pycache__ and .mypy_cache
-        files = [f for f in files if '__pycache__' not in f.parts and '.mypy_cache' not in f.parts]
+        # Filter out __pycache__, .mypy_cache, and .venv
+        files = [f for f in files if '__pycache__' not in f.parts and '.mypy_cache' not in f.parts and '.venv-dev' not in f.parts]
 
         return sorted(files)
 
     def run(self, base_path: Path, recursive: bool) -> int:
         """Run compilation checker"""
         print()
-        print(f"{Colors.MAUVE}[pycompile]{Colors.NC} {Icons.FILE}  Python Compilation Checker")
+        print(f"{Colors.MAUVE}[pycompile]{Colors.NC} {Icons.FILE}  python compilation checker")
         print()
         log_info("Validating Python syntax by compiling to bytecode")
         print()
@@ -121,7 +117,7 @@ class PyCompileChecker:
             log_error("No Python files found")
             return 1
 
-        log_info(f"Checking {len(files)} Python file(s)")
+        log_info(f"checking {len(files)} Python files")
         print()
 
         for filepath in files:
@@ -129,7 +125,7 @@ class PyCompileChecker:
             print()
 
         # Print summary
-        print(f"{Colors.MAUVE}Summary{Colors.NC}")
+        print(f"{Colors.MAUVE}summary{Colors.NC}")
         print()
         print(f"{Colors.TEXT}Total files checked:   {Colors.NC}{Colors.SAPPHIRE}{self.total_files}{Colors.NC}")
         print(f"{Colors.GREEN}Passed:                {Colors.NC}{Colors.SAPPHIRE}{self.passed_files}{Colors.NC}")
@@ -143,7 +139,7 @@ class PyCompileChecker:
             log_error("Compilation check failed")
             return 1
         else:
-            log_success("All files compiled successfully!")
+            log_success("all files compiled")
             return 0
 
 

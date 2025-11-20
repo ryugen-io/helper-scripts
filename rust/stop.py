@@ -9,37 +9,41 @@ import time
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-REPO_ROOT = SCRIPT_DIR.parent
+REPO_ROOT = SCRIPT_DIR
 sys.path.insert(0, str(REPO_ROOT / 'sys' / 'theme'))
+sys.path.insert(0, str(REPO_ROOT / 'sys' / 'utils'))
 
 from theme import (  # noqa: E402
     Colors, Icons, log_success, log_error, log_warn, log_info
 )
+from xdg_paths import get_pid_file  # noqa: E402
 
 
 def load_env_config(repo_root: Path) -> dict:
-    """Load configuration from .env file"""
-    config = {
-        'SYS_DIR': 'sys',
-        'GITHUB_DIR': '.github',
-        'SCRIPT_DIRS': 'server,docker,dev,utils,rust',
-        'SERVER_BINARY': 'your-server-binary',
-        'DISPLAY_NAME': 'Your Server',
-        'PID_FILE': '.server.pid',
-        'LOG_FILE': 'server.log'
-    }
+    """Load configuration from sys/env/.env file"""
+    env_file = repo_root / 'sys' / 'env' / '.env'
 
-    sys_env_dir = repo_root / config['SYS_DIR'] / 'env'
-    for env_name in ['.env', '.env.example']:
-        env_file = sys_env_dir / env_name
-        if env_file.exists():
-            with open(env_file, 'r') as f:
-                for line in f:
-                    line = line.strip()
-                    if line and not line.startswith('#') and '=' in line:
-                        key, value = line.split('=', 1)
-                        config[key] = value
-            break
+    if not env_file.exists():
+        raise FileNotFoundError(
+            f"Configuration file not found: {env_file}\n"
+            f"Copy sys/env/.env.example to sys/env/.env and configure it."
+        )
+
+    config = {}
+    with open(env_file, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                key, value = line.split('=', 1)
+                # Remove quotes if present
+                value = value.strip('"').strip("'")
+                config[key] = value
+
+    # Validate required keys
+    required_keys = ['SERVER_BINARY', 'DISPLAY_NAME']
+    missing = [key for key in required_keys if key not in config]
+    if missing:
+        raise ValueError(f"Missing required config keys in .env: {', '.join(missing)}")
 
     return config
 
@@ -59,11 +63,17 @@ def main():
     config = load_env_config(REPO_ROOT)
     server_binary = config['SERVER_BINARY']
     display_name = config['DISPLAY_NAME']
-    pid_file = REPO_ROOT / config['PID_FILE']
+    app_name = 'sysrat'
+
+    # Get XDG-compliant PID file path
+    pid_file = get_pid_file(app_name, config)
+
+    # Handle relative paths from config
+    if not pid_file.is_absolute():
+        pid_file = REPO_ROOT / pid_file
 
     print()
-    print(f"{Colors.MAUVE}[stop]{Colors.NC} {Icons.STOP}  "
-          f"Stopping {display_name}...")
+    print(f"{Colors.MAUVE}[stop]{Colors.NC}   stopping sysrat...")
     print()
 
     # Check PID file
@@ -74,14 +84,14 @@ def main():
                 old_pid = int(f.read().strip())
 
             if is_running(old_pid):
-                log_info(f"Stopping server with PID {old_pid}")
+                log_info(f"stopping pid {old_pid}")
                 subprocess.run(['kill', str(old_pid)], check=True,
                                capture_output=True)
                 time.sleep(1)
 
                 # Force kill if still running
                 if is_running(old_pid):
-                    log_warn("Force killing server")
+                    log_warn("force killing")
                     subprocess.run(['kill', '-9', str(old_pid)],
                                    capture_output=True)
                     time.sleep(1)
@@ -89,15 +99,15 @@ def main():
                 if not is_running(old_pid):
                     server_stopped = True
                 else:
-                    log_error("Failed to stop server")
+                    log_error("failed to stop")
                     sys.exit(1)
             else:
-                log_warn("PID file exists but process is not running")
+                log_warn("pid file exists but process not running")
 
             pid_file.unlink()
 
         except (ValueError, IOError) as e:
-            log_error(f"Error reading PID file: {e}")
+            log_error(f"error reading pid file: {e}")
             pid_file.unlink()
     else:
         # Try to find and kill by name
@@ -106,29 +116,29 @@ def main():
                                     capture_output=True, text=True)
             if result.returncode == 0:
                 pids = result.stdout.strip().split('\n')
-                log_info(f"Found {len(pids)} running server(s), stopping...")
+                log_info(f"found {len(pids)} server(s), stopping...")
                 subprocess.run(['pkill', '-f', server_binary],
                                capture_output=True)
                 time.sleep(1)
                 server_stopped = True
             else:
-                log_warn(f"No running {display_name} found")
+                log_warn("no running server found")
                 print()
                 sys.exit(0)
         except FileNotFoundError:
-            log_warn(f"No running {display_name} found")
+            log_warn("no running server found")
             print()
             sys.exit(0)
 
     if server_stopped:
         print()
-        log_success(f"{display_name} stopped successfully")
+        log_success("sysrat stopped")
     else:
-        log_warn("Server may still be running")
-        log_info(f"Check with: ps aux | grep {server_binary}")
+        log_warn("server may still be running")
+        log_info(f"check with: ps aux | grep {server_binary}")
 
     print()
-    print(f" {Colors.RED}{Icons.STOP}{Colors.NC}  Done.")
+    print(f" {Colors.RED}{Icons.STOP}{Colors.NC}  done")
     print()
 
 

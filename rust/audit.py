@@ -10,32 +10,28 @@ from pathlib import Path
 from typing import List
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-REPO_ROOT = SCRIPT_DIR.parent
-sys.path.insert(0, str(REPO_ROOT / '.sys' / 'theme'))
+REPO_ROOT = SCRIPT_DIR.parent.parent
+sys.path.insert(0, str(REPO_ROOT / 'sys' / 'theme'))
 
 from theme import Colors, Icons, log_success, log_error, log_warn, log_info
 
 
 def load_env_config(repo_root: Path) -> dict:
-    """Load configuration from .env file"""
-    config = {
-        'SYS_DIR': '.sys',
-        'GITHUB_DIR': '.github',
-        'SCRIPT_DIRS': 'docker,dev,utils,rust',
-        'RUST_TOOLCHAIN': 'stable'
-    }
+    """Load configuration from sys/env/.env.dev file"""
+    env_file = repo_root / 'sys' / 'env' / '.env.dev'
 
-    sys_env_dir = repo_root / config['SYS_DIR'] / 'env'
-    for env_name in ['.env', '.env.example']:
-        env_file = sys_env_dir / env_name
-        if env_file.exists():
-            with open(env_file, 'r') as f:
-                for line in f:
-                    line = line.strip()
-                    if line and not line.startswith('#') and '=' in line:
-                        key, value = line.split('=', 1)
-                        config[key] = value
-            break
+    if not env_file.exists():
+        raise FileNotFoundError(f"config not found: {env_file}")
+
+    config = {}
+    with open(env_file, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                key, value = line.split('=', 1)
+                # Remove quotes if present
+                value = value.strip('"').strip("'")
+                config[key] = value
 
     return config
 
@@ -199,7 +195,7 @@ About cargo-auditable:
     args = parser.parse_args()
 
     print()
-    print(f"{Colors.MAUVE}[audit]{Colors.NC} {Icons.INFO}  Rust Security Audit (cargo auditable)")
+    print(f"{Colors.MAUVE}[audit]{Colors.NC} {Icons.INFO}  rust security audit (cargo auditable)")
     print()
 
     if not check_cargo():
@@ -209,7 +205,7 @@ About cargo-auditable:
         return 1
 
     version = get_auditable_version()
-    log_info(f"Using {version}")
+    log_info(f"using {version}")
     print()
 
     base_path = Path(args.path)
@@ -221,10 +217,10 @@ About cargo-auditable:
     projects = find_cargo_projects(base_path, args.recursive)
 
     if not projects:
-        log_error("No Rust projects found (no Cargo.toml)")
+        log_error("no rust projects found (no Cargo.toml)")
         return 1
 
-    log_info(f"Found {len(projects)} Rust project(s)")
+    log_info(f"found {len(projects)} rust project(s)")
     build_mode = 'build' if args.build else 'check'
     log_info(f"Mode: {build_mode}")
     print()
@@ -243,31 +239,31 @@ About cargo-auditable:
             failed += 1
         print()
 
-    print(f"{Colors.MAUVE}Summary{Colors.NC}")
+    print(f"{Colors.MAUVE}summary{Colors.NC}")
     print()
 
     total = clean + warnings + failed
-    print(f"{Colors.TEXT}Total projects:      {Colors.NC}{Colors.SAPPHIRE}{total}{Colors.NC}")
+    print(f"{Colors.TEXT}total projects:      {Colors.NC}{Colors.SAPPHIRE}{total}{Colors.NC}")
 
     if clean > 0:
-        print(f"{Colors.GREEN}Clean:               {Colors.NC}{Colors.SAPPHIRE}{clean}{Colors.NC}")
+        print(f"{Colors.GREEN}clean:               {Colors.NC}{Colors.SAPPHIRE}{clean}{Colors.NC}")
 
     if warnings > 0:
         print(f"{Colors.YELLOW}Warnings:            {Colors.NC}{Colors.SAPPHIRE}{warnings}{Colors.NC}")
 
     if failed > 0:
-        print(f"{Colors.RED}Failed:              {Colors.NC}{Colors.SAPPHIRE}{failed}{Colors.NC}")
+        print(f"{Colors.RED}failed:              {Colors.NC}{Colors.SAPPHIRE}{failed}{Colors.NC}")
 
     print()
 
     if failed > 0:
-        log_error("Some projects failed to audit")
+        log_error("audit failed")
         return 1
     elif warnings > 0:
-        log_warn("Some projects have warnings")
+        log_warn("audit warnings found")
         return 0
     else:
-        log_success("All projects passed audit!")
+        log_success("all projects passed")
         return 0
 
 

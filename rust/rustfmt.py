@@ -9,34 +9,30 @@ import subprocess
 from pathlib import Path
 from typing import List
 
-# Add .sys/theme to path for central theming
+# Add sys/theme to path for central theming
 SCRIPT_DIR = Path(__file__).resolve().parent
-REPO_ROOT = SCRIPT_DIR.parent
-sys.path.insert(0, str(REPO_ROOT / '.sys' / 'theme'))
+REPO_ROOT = SCRIPT_DIR.parent.parent
+sys.path.insert(0, str(REPO_ROOT / 'sys' / 'theme'))
 
 from theme import Colors, Icons, log_success, log_error, log_warn, log_info
 
 
 def load_env_config(repo_root: Path) -> dict:
-    """Load configuration from .env file"""
-    config = {
-        'SYS_DIR': '.sys',
-        'GITHUB_DIR': '.github',
-        'SCRIPT_DIRS': 'docker,dev,utils,rust',
-        'RUST_TOOLCHAIN': 'stable'
-    }
+    """Load configuration from sys/env/.env.dev file"""
+    env_file = repo_root / 'sys' / 'env' / '.env.dev'
 
-    sys_env_dir = repo_root / config['SYS_DIR'] / 'env'
-    for env_name in ['.env', '.env.example']:
-        env_file = sys_env_dir / env_name
-        if env_file.exists():
-            with open(env_file, 'r') as f:
-                for line in f:
-                    line = line.strip()
-                    if line and not line.startswith('#') and '=' in line:
-                        key, value = line.split('=', 1)
-                        config[key] = value
-            break
+    if not env_file.exists():
+        raise FileNotFoundError(f"config not found: {env_file}")
+
+    config = {}
+    with open(env_file, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                key, value = line.split('=', 1)
+                # Remove quotes if present
+                value = value.strip('"').strip("'")
+                config[key] = value
 
     return config
 
@@ -120,7 +116,7 @@ def format_project(project_path: Path, check_mode: bool = False) -> int:
                 print(f"  {Colors.TEXT}{project_name}{Colors.NC} {Colors.SAPPHIRE}(already formatted){Colors.NC}")
                 return 1
             else:
-                log_success(f"  Formatted {project_name}")
+                log_success(f"  {project_name} - formatted")
                 return 0
         else:
             if check_mode:
@@ -184,7 +180,7 @@ Examples:
     args = parser.parse_args()
 
     print()
-    print(f"{Colors.MAUVE}[rustfmt]{Colors.NC} {Icons.HAMMER}  Rust Code Formatter")
+    print(f"{Colors.MAUVE}[rustfmt]{Colors.NC} {Icons.HAMMER}  rust code formatter")
     print()
 
     if args.check:
@@ -198,7 +194,7 @@ Examples:
         return 1
 
     version = get_rustfmt_version()
-    log_info(f"Using {version}")
+    log_info(f"using {version}")
     print()
 
     base_path = Path(args.path)
@@ -210,10 +206,10 @@ Examples:
     projects = find_cargo_projects(base_path, args.recursive)
 
     if not projects:
-        log_error("No Rust projects found (no Cargo.toml)")
+        log_error("no rust projects found (no Cargo.toml)")
         return 1
 
-    log_info(f"Found {len(projects)} Rust project(s)")
+    log_info(f"found {len(projects)} rust project(s)")
     print()
 
     formatted = 0
@@ -230,36 +226,36 @@ Examples:
             failed += 1
 
     print()
-    print(f"{Colors.MAUVE}Summary{Colors.NC}")
+    print(f"{Colors.MAUVE}summary{Colors.NC}")
     print()
 
     total = formatted + unchanged + failed
-    print(f"{Colors.TEXT}Total projects:      {Colors.NC}{Colors.SAPPHIRE}{total}{Colors.NC}")
+    print(f"{Colors.TEXT}total projects:      {Colors.NC}{Colors.SAPPHIRE}{total}{Colors.NC}")
 
     if formatted > 0:
-        action = "Need formatting" if args.check else "Formatted"
+        action = "need formatting" if args.check else "formatted"
         print(f"{Colors.GREEN}{action}:         {Colors.NC}{Colors.SAPPHIRE}{formatted}{Colors.NC}")
 
     if unchanged > 0:
-        print(f"{Colors.TEXT}Already formatted:   {Colors.NC}{Colors.SAPPHIRE}{unchanged}{Colors.NC}")
+        print(f"{Colors.TEXT}already formatted:   {Colors.NC}{Colors.SAPPHIRE}{unchanged}{Colors.NC}")
 
     if failed > 0:
-        print(f"{Colors.RED}Failed:              {Colors.NC}{Colors.SAPPHIRE}{failed}{Colors.NC}")
+        print(f"{Colors.RED}failed:              {Colors.NC}{Colors.SAPPHIRE}{failed}{Colors.NC}")
 
     print()
 
     if failed > 0:
-        log_error("Some projects failed to format")
+        log_error("formatting failed")
         return 1
     elif formatted > 0:
         if args.check:
-            log_warn("Some projects need formatting")
+            log_warn("formatting needed")
             return 1
         else:
-            log_success("All projects formatted successfully!")
+            log_success("all projects formatted")
             return 0
     else:
-        log_success("All projects already formatted correctly!")
+        log_success("already formatted")
         return 0
 
 

@@ -9,35 +9,31 @@ import subprocess
 from pathlib import Path
 from typing import List, Dict, Tuple
 
-# Add .sys/theme to path for central theming
+# Add sys/theme to path for central theming
 SCRIPT_DIR = Path(__file__).resolve().parent
-REPO_ROOT = SCRIPT_DIR.parent
-sys.path.insert(0, str(REPO_ROOT / '.sys' / 'theme'))
+REPO_ROOT = SCRIPT_DIR.parent.parent
+sys.path.insert(0, str(REPO_ROOT / 'sys' / 'theme'))
 
 # Import central theme
 from theme import Colors, Icons, log_success, log_error, log_warn, log_info
 
 
 def load_env_config(repo_root: Path) -> dict:
-    """Load configuration from .env file"""
-    config = {
-        'SYS_DIR': '.sys',
-        'GITHUB_DIR': '.github',
-        'SCRIPT_DIRS': 'docker,dev,utils'
-    }
+    """Load configuration from sys/env/.env.dev file"""
+    env_file = repo_root / 'sys' / 'env' / '.env.dev'
 
-    # Try .sys/env/.env first, fallback to .sys/env/.env.example
-    sys_env_dir = repo_root / config['SYS_DIR'] / 'env'
-    for env_name in ['.env', '.env.example']:
-        env_file = sys_env_dir / env_name
-        if env_file.exists():
-            with open(env_file, 'r') as f:
-                for line in f:
-                    line = line.strip()
-                    if line and not line.startswith('#') and '=' in line:
-                        key, value = line.split('=', 1)
-                        config[key] = value
-            break
+    if not env_file.exists():
+        raise FileNotFoundError(f"config not found: {env_file}")
+
+    config = {}
+    with open(env_file, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                key, value = line.split('=', 1)
+                # Remove quotes if present
+                value = value.strip('"').strip("'")
+                config[key] = value
 
     return config
 
@@ -118,7 +114,7 @@ def lint_file(filepath: Path, tools: List[str]) -> Tuple[bool, int]:
     """
     issues = 0
 
-    print(f"{Colors.BLUE}Checking {Colors.NC}{filepath}")
+    print(f"{Colors.BLUE}checking {Colors.NC}{filepath}")
 
     # 1. Syntax check (always run)
     passed, error = check_syntax(filepath)
@@ -152,7 +148,7 @@ def lint_file(filepath: Path, tools: List[str]) -> Tuple[bool, int]:
                 print(f"    {Colors.SUBTEXT}... and {len(errors) - 2} more{Colors.NC}")
 
     if issues == 0:
-        log_success("  Passed syntax check")
+        log_success("  passed syntax check")
         return True, 0
     else:
         log_error(f"  {issues} critical issue(s) found")
@@ -183,6 +179,9 @@ def scan_files(base_path: Path, recursive: bool) -> List[Path]:
     elif base_path.is_dir():
         pattern = '**/*.py' if recursive else '*.py'
         files.extend(base_path.glob(pattern))
+
+    # Filter out __pycache__, .mypy_cache, and .venv
+    files = [f for f in files if '__pycache__' not in f.parts and '.mypy_cache' not in f.parts and '.venv-dev' not in f.parts]
 
     return sorted(files)
 
@@ -240,7 +239,7 @@ Available tools: flake8, pylint, mypy
     args = parser.parse_args()
 
     print()
-    print(f"{Colors.MAUVE}[pylint]{Colors.NC} Python Linter")
+    print(f"{Colors.MAUVE}[pylint]{Colors.NC} python linter")
     print()
 
     # Check which tools are available
@@ -270,7 +269,7 @@ Available tools: flake8, pylint, mypy
         log_error("No Python files found")
         return 1
 
-    log_info(f"Checking {len(files)} file(s)")
+    log_info(f"checking {len(files)} files")
     print()
 
     # Lint files
@@ -292,7 +291,7 @@ Available tools: flake8, pylint, mypy
         print()
 
     # Summary
-    print(f"{Colors.GREEN}Summary:{Colors.NC}")
+    print(f"{Colors.GREEN}summary:{Colors.NC}")
     print()
     print(f"{Colors.BLUE}  Total files:       {Colors.NC}{total_files}")
     print(f"{Colors.GREEN}  Passed:            {Colors.NC}{passed_files}")
@@ -300,10 +299,10 @@ Available tools: flake8, pylint, mypy
     print()
 
     if total_issues == 0:
-        log_success("All Python files passed linting!")
+        log_success("all python files passed")
         return 0
     else:
-        log_error("Some files have critical issues")
+        log_error("linting failed")
         return 1
 
 

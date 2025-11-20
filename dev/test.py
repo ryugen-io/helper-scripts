@@ -8,10 +8,10 @@ import subprocess
 import sys
 from pathlib import Path
 
-# Add .sys/theme to path for central theming
+# Add sys/theme to path for central theming
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
-sys.path.insert(0, str(REPO_ROOT / '.sys' / 'theme'))
+sys.path.insert(0, str(REPO_ROOT / 'sys' / 'theme'))
 
 # Import central theme
 from theme import Colors, Icons
@@ -20,12 +20,12 @@ from theme import Colors, Icons
 def load_env_config(repo_root: Path) -> dict:
     """Load configuration from .env file"""
     config = {
-        'SYS_DIR': '.sys',
+        'SYS_DIR': 'sys',
         'GITHUB_DIR': '.github',
         'SCRIPT_DIRS': 'docker,dev,utils'
     }
 
-    # Try .sys/env/.env first, fallback to .sys/env/.env.example
+    # Try sys/env/.env first, fallback to sys/env/.env.example
     sys_env_dir = repo_root / config['SYS_DIR'] / 'env'
     for env_name in ['.env', '.env.example']:
         env_file = sys_env_dir / env_name

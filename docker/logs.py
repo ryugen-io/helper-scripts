@@ -9,7 +9,7 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
-sys.path.insert(0, str(REPO_ROOT / '.sys' / 'theme'))
+sys.path.insert(0, str(REPO_ROOT / 'sys' / 'theme'))
 
 from theme import (  # noqa: E402
     Colors, Icons, log_success, log_error, log_warn, log_info
@@ -19,7 +19,7 @@ from theme import (  # noqa: E402
 def load_env_config(repo_root: Path) -> dict:
     """Load configuration from .env file"""
     config = {
-        'SYS_DIR': '.sys',
+        'SYS_DIR': 'sys',
         'GITHUB_DIR': '.github',
         'SCRIPT_DIRS': 'docker,dev,utils,rust',
         'CONTAINER_NAME': 'your-container-name',

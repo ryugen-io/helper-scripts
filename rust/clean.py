@@ -11,33 +11,28 @@ from typing import List
 import shutil
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-REPO_ROOT = SCRIPT_DIR.parent
-sys.path.insert(0, str(REPO_ROOT / '.sys' / 'theme'))
+REPO_ROOT = SCRIPT_DIR.parent.parent
+sys.path.insert(0, str(REPO_ROOT / 'sys' / 'theme'))
 
 from theme import Colors, Icons, log_success, log_error, log_warn, log_info
 
 
 def load_env_config(repo_root: Path) -> dict:
-    """Load configuration from .env file"""
-    config = {
-        'SYS_DIR': '.sys',
-        'GITHUB_DIR': '.github',
-        'SCRIPT_DIRS': 'docker,dev,utils,rust',
-        'RUST_TOOLCHAIN': 'stable',
-        'RUST_TARGET_DIR': 'target'
-    }
+    """Load configuration from sys/env/.env.dev file"""
+    env_file = repo_root / 'sys' / 'env' / '.env.dev'
 
-    sys_env_dir = repo_root / config['SYS_DIR'] / 'env'
-    for env_name in ['.env', '.env.example']:
-        env_file = sys_env_dir / env_name
-        if env_file.exists():
-            with open(env_file, 'r') as f:
-                for line in f:
-                    line = line.strip()
-                    if line and not line.startswith('#') and '=' in line:
-                        key, value = line.split('=', 1)
-                        config[key] = value
-            break
+    if not env_file.exists():
+        raise FileNotFoundError(f"config not found: {env_file}")
+
+    config = {}
+    with open(env_file, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                key, value = line.split('=', 1)
+                # Remove quotes if present
+                value = value.strip('"').strip("'")
+                config[key] = value
 
     return config
 
@@ -202,10 +197,10 @@ Examples:
     projects = find_cargo_projects(base_path, args.recursive)
 
     if not projects:
-        log_error("No Rust projects found (no Cargo.toml)")
+        log_error("no rust projects found (no Cargo.toml)")
         return 1
 
-    log_info(f"Found {len(projects)} Rust project(s)")
+    log_info(f"found {len(projects)} rust project(s)")
     print()
 
     cleaned = 0
@@ -221,18 +216,18 @@ Examples:
             failed += 1
 
     print()
-    print(f"{Colors.MAUVE}Summary{Colors.NC}")
+    print(f"{Colors.MAUVE}summary{Colors.NC}")
     print()
 
     total = cleaned + failed
-    print(f"{Colors.TEXT}Total projects:      {Colors.NC}{Colors.SAPPHIRE}{total}{Colors.NC}")
+    print(f"{Colors.TEXT}total projects:      {Colors.NC}{Colors.SAPPHIRE}{total}{Colors.NC}")
 
     if cleaned > 0:
         action = "Would clean" if args.dry_run else "Cleaned"
         print(f"{Colors.GREEN}{action}:           {Colors.NC}{Colors.SAPPHIRE}{cleaned}{Colors.NC}")
 
     if failed > 0:
-        print(f"{Colors.RED}Failed:              {Colors.NC}{Colors.SAPPHIRE}{failed}{Colors.NC}")
+        print(f"{Colors.RED}failed:              {Colors.NC}{Colors.SAPPHIRE}{failed}{Colors.NC}")
 
     if total_freed > 0:
         action = "Would free" if args.dry_run else "Freed"
@@ -241,13 +236,13 @@ Examples:
     print()
 
     if failed > 0:
-        log_error("Some projects failed to clean")
+        log_error("cleaning failed")
         return 1
     else:
         if args.dry_run:
-            log_success("Dry run complete!")
+            log_success("dry run complete")
         else:
-            log_success("All projects cleaned successfully!")
+            log_success("all projects cleaned")
         return 0
 
 

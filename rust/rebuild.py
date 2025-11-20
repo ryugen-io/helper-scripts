@@ -8,48 +8,55 @@ import sys
 import subprocess
 import time
 import argparse
+import os
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-REPO_ROOT = SCRIPT_DIR.parent
+REPO_ROOT = SCRIPT_DIR
 sys.path.insert(0, str(REPO_ROOT / 'sys' / 'theme'))
+sys.path.insert(0, str(REPO_ROOT / 'sys' / 'utils'))
 
 from theme import (  # noqa: E402
     Colors, Icons, log_success, log_error, log_warn, log_info
 )
+from xdg_paths import get_log_file, get_pid_file  # noqa: E402
+
+
+def get_build_env() -> dict:
+    """Get environment with verbose cargo build output enabled"""
+    env = os.environ.copy()
+    env['CARGO_BUILD_VERBOSE'] = '1'
+    return env
 
 
 def load_env_config(repo_root: Path) -> dict:
-    """Load configuration from .env file"""
-    config = {
-        'SYS_DIR': 'sys',
-        'GITHUB_DIR': '.github',
-        'SCRIPT_DIRS': 'server,docker,dev,utils,rust',
-        'SERVER_BINARY': 'your-server-binary',
-        'DISPLAY_NAME': 'Your Server',
-        'SERVER_HOST': 'localhost',
-        'SERVER_PORT': '3000',
-        'PID_FILE': '.server.pid',
-        'LOG_FILE': 'server.log',
-        'RUST_TOOLCHAIN': 'stable',
-        'CARGO_AUDITABLE': 'true',
-        'TRUNK_ENABLED': 'false',
-        'SERVER_DIR': 'server',
-        'FRONTEND_DIR': 'frontend',
-        'CONFIG_FILE': 'config.toml'
-    }
+    """Load configuration from sys/env/.env file"""
+    env_file = repo_root / 'sys' / 'env' / '.env'
 
-    sys_env_dir = repo_root / config['SYS_DIR'] / 'env'
-    for env_name in ['.env', '.env.example']:
-        env_file = sys_env_dir / env_name
-        if env_file.exists():
-            with open(env_file, 'r') as f:
-                for line in f:
-                    line = line.strip()
-                    if line and not line.startswith('#') and '=' in line:
-                        key, value = line.split('=', 1)
-                        config[key] = value
-            break
+    if not env_file.exists():
+        raise FileNotFoundError(
+            f"Configuration file not found: {env_file}\n"
+            f"Copy sys/env/.env.example to sys/env/.env and configure it."
+        )
+
+    config = {}
+    with open(env_file, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                key, value = line.split('=', 1)
+                # Remove quotes if present
+                value = value.strip('"').strip("'")
+                config[key] = value
+
+    # Validate required keys
+    required_keys = [
+        'SERVER_BINARY', 'DISPLAY_NAME', 'SERVER_HOST', 'SERVER_PORT',
+        'SERVER_DIR', 'FRONTEND_DIR', 'RUST_TOOLCHAIN'
+    ]
+    missing = [key for key in required_keys if key not in config]
+    if missing:
+        raise ValueError(f"Missing required config keys in .env: {', '.join(missing)}")
 
     return config
 
@@ -74,14 +81,14 @@ def cargo_auditable_exists() -> bool:
 
 def check_requirements(config: dict) -> bool:
     """Check if required tools are installed"""
-    log_info("Checking requirements...")
+    log_info("checking requirements...")
 
     missing = []
 
     if not command_exists('cargo'):
         missing.append('cargo')
 
-    if config.get('TRUNK_ENABLED', 'false') == 'true':
+    if config.get('TRUNK_ENABLED', 'true') == 'true':
         if not command_exists('trunk'):
             missing.append('trunk')
 
@@ -90,14 +97,14 @@ def check_requirements(config: dict) -> bool:
             missing.append('cargo-auditable')
 
     if missing:
-        log_error(f"Missing required tools: {', '.join(missing)}")
+        log_error(f"missing required tools: {', '.join(missing)}")
         print()
-        print(f"{Colors.TEXT}Install with:{Colors.NC}")
+        print(f"{Colors.TEXT}install:{Colors.NC}")
         print(f"{Colors.BLUE}  cargo install {' '.join(missing)}{Colors.NC}")
         print()
         return False
 
-    log_success("All required tools are available")
+    log_success("requirements met")
     return True
 
 
@@ -105,10 +112,11 @@ def check_config(config: dict) -> bool:
     """Validate configuration file"""
     config_file = REPO_ROOT / config['CONFIG_FILE']
     if not config_file.exists():
-        log_warn(f"{config['CONFIG_FILE']} not found (optional)")
-        return True
+        log_error(f"{config['CONFIG_FILE']} not found")
+        log_info(f"create {config['CONFIG_FILE']}")
+        return False
 
-    log_info("Configuration file found")
+    log_info("config found")
     return True
 
 
@@ -137,9 +145,10 @@ def check_port(port: str) -> bool:
 
 def stop_servers(config: dict):
     """Stop running servers"""
-    log_info("Stopping running servers...")
+    log_info("stopping servers...")
 
-    pid_file = REPO_ROOT / config['PID_FILE']
+    app_name = 'sysrat'
+    pid_file = get_pid_file(app_name, config)
     server_binary = config['SERVER_BINARY']
 
     # Check PID file
@@ -152,7 +161,7 @@ def stop_servers(config: dict):
                 # Check if process exists
                 subprocess.run(['kill', '-0', str(old_pid)], check=True,
                                capture_output=True)
-                log_info(f"Stopping server with PID {old_pid}")
+                log_info(f"stopping pid {old_pid}")
                 subprocess.run(['kill', str(old_pid)], check=True,
                                capture_output=True)
                 time.sleep(1)
@@ -161,7 +170,7 @@ def stop_servers(config: dict):
                 try:
                     subprocess.run(['kill', '-0', str(old_pid)], check=True,
                                    capture_output=True)
-                    log_warn("Force killing server")
+                    log_warn("force killing server")
                     subprocess.run(['kill', '-9', str(old_pid)],
                                    capture_output=True)
                 except subprocess.CalledProcessError:
@@ -179,7 +188,7 @@ def stop_servers(config: dict):
         result = subprocess.run(['pgrep', '-f', server_binary],
                                 capture_output=True, text=True)
         if result.returncode == 0:
-            log_info("Killing servers by name")
+            log_info("killing by name")
             subprocess.run(['pkill', '-f', server_binary], capture_output=True)
             time.sleep(1)
     except FileNotFoundError:
@@ -188,112 +197,114 @@ def stop_servers(config: dict):
     # Verify port is free
     port = config['SERVER_PORT']
     if check_port(port):
-        log_warn(f"Port {port} is still in use, waiting...")
+        log_warn(f"port {port} still in use, waiting...")
         time.sleep(2)
         if check_port(port):
-            log_error(f"Port {port} is still occupied")
-            log_info("Manual intervention may be required")
+            log_error(f"port {port} still occupied")
+            log_info("manual intervention required")
             sys.exit(1)
 
 
 def build_backend(config: dict, skip_format: bool = False) -> bool:
     """Build backend Rust code"""
     print()
-    print(f"{Colors.BLUE}[rebuild]{Colors.NC} {Icons.HAMMER}  Building backend...")
+    print(f"{Colors.BLUE}[rebuild]{Colors.NC} {Icons.HAMMER}  building backend...")
     print()
 
     if not skip_format:
-        log_info("Formatting backend code...")
+        log_info("formatting backend...")
         try:
             subprocess.run(['cargo', 'fmt', '--all'], cwd=REPO_ROOT,
                            check=True)
         except subprocess.CalledProcessError:
-            log_error("Backend formatting failed")
+            log_error("backend formatting failed")
             return False
 
     use_auditable = config.get('CARGO_AUDITABLE', 'true') == 'true'
     server_binary = config['SERVER_BINARY']
 
-    log_info("Building backend (dev profile)...")
+    log_info("building backend dev...")
     try:
         if use_auditable:
             subprocess.run(['cargo', 'auditable', 'build', '--bin', server_binary],
-                           cwd=REPO_ROOT, check=True)
+                           cwd=REPO_ROOT, check=True, env=get_build_env())
         else:
             subprocess.run(['cargo', 'build', '--bin', server_binary],
-                           cwd=REPO_ROOT, check=True)
+                           cwd=REPO_ROOT, check=True, env=get_build_env())
     except subprocess.CalledProcessError:
-        log_error("Backend dev build failed")
+        log_error("backend dev build failed")
         return False
 
-    log_info("Building backend (release profile)...")
+    log_info("building backend release...")
     try:
         if use_auditable:
             subprocess.run(['cargo', 'auditable', 'build', '--release', '--bin', server_binary],
-                           cwd=REPO_ROOT, check=True)
+                           cwd=REPO_ROOT, check=True, env=get_build_env())
         else:
             subprocess.run(['cargo', 'build', '--release', '--bin', server_binary],
-                           cwd=REPO_ROOT, check=True)
+                           cwd=REPO_ROOT, check=True, env=get_build_env())
     except subprocess.CalledProcessError:
-        log_error("Backend release build failed")
+        log_error("backend release build failed")
         return False
 
     print()
-    log_success("Backend build successful")
+    log_success("backend built")
     return True
 
 
 def build_frontend(config: dict, skip_format: bool = False) -> bool:
     """Build frontend WASM code"""
-    if config.get('TRUNK_ENABLED', 'false') != 'true':
-        log_info("Frontend build disabled (TRUNK_ENABLED=false)")
+    if config.get('TRUNK_ENABLED', 'true') != 'true':
+        log_info("frontend disabled (TRUNK_ENABLED=false)")
         return True
 
     print()
-    print(f"{Colors.BLUE}[rebuild]{Colors.NC} {Icons.HAMMER}  Building frontend...")
+    print(f"{Colors.BLUE}[rebuild]{Colors.NC} {Icons.HAMMER}  building frontend...")
     print()
 
     frontend_dir = REPO_ROOT / config['FRONTEND_DIR']
     if not frontend_dir.exists():
-        log_error(f"Frontend directory not found: {frontend_dir}")
+        log_error(f"frontend dir missing: {frontend_dir}")
         return False
 
     if not skip_format:
-        log_info("Formatting frontend code...")
+        log_info("formatting frontend...")
         try:
             subprocess.run(['cargo', 'fmt'], cwd=frontend_dir, check=True)
         except subprocess.CalledProcessError:
-            log_error("Frontend formatting failed")
+            log_error("frontend formatting failed")
             return False
 
-    log_info("Building WASM frontend (release)...")
+    log_info("building frontend release...")
     try:
         subprocess.run(['trunk', 'build', '--release'], cwd=frontend_dir,
-                       check=True)
+                       check=True, env=get_build_env())
     except subprocess.CalledProcessError:
-        log_error("Frontend release build failed")
+        log_error("frontend release build failed")
         return False
 
-    log_info("Building WASM frontend (dev)...")
+    log_info("building frontend dev...")
     try:
-        subprocess.run(['trunk', 'build'], cwd=frontend_dir, check=True)
+        subprocess.run(['trunk', 'build'], cwd=frontend_dir, check=True,
+                       env=get_build_env())
     except subprocess.CalledProcessError:
-        log_error("Frontend dev build failed")
+        log_error("frontend dev build failed")
         return False
 
     print()
-    log_success("Frontend build successful")
+    log_success("frontend built")
     return True
 
 
 def start_server(config: dict) -> bool:
     """Start the server in background"""
     print()
-    print(f"{Colors.MAUVE}[rebuild]{Colors.NC} {Icons.ROCKET}  Starting server...")
+    print(f"{Colors.MAUVE}[rebuild]{Colors.NC} {Icons.ROCKET}  starting server...")
     print()
 
-    log_file = REPO_ROOT / config['LOG_FILE']
-    pid_file = REPO_ROOT / config['PID_FILE']
+    app_name = 'sysrat'
+    log_file = get_log_file(app_name, config)
+    pid_file = get_pid_file(app_name, config)
     server_binary = config['SERVER_BINARY']
 
     # Remove old log file
@@ -321,8 +332,8 @@ def start_server(config: dict) -> bool:
 
     # Check if server is running
     if proc.poll() is not None:
-        log_error("Server failed to start")
-        log_info("Last 20 lines of log:")
+        log_error("server failed to start")
+        log_info("last 20 lines:")
         print()
         try:
             with open(log_file, 'r') as f:
@@ -342,18 +353,18 @@ def start_server(config: dict) -> bool:
     for attempt in range(max_attempts):
         if check_port(port):
             print()
-            log_success(f"Server running (PID: {server_pid})")
+            log_success(f"server running (pid: {server_pid})")
             print()
-            log_info(f"URL: {Colors.SAPPHIRE}http://{config['SERVER_HOST']}:"
+            log_info(f"url: {Colors.SAPPHIRE}http://{config['SERVER_HOST']}:"
                      f"{port}{Colors.NC}")
-            log_info(f"Logs: {Colors.BLUE}tail -f {log_file}{Colors.NC}")
-            log_info(f"Stop: {Colors.BLUE}./stop.py{Colors.NC}")
+            log_info(f"logs: {Colors.BLUE}tail -f {log_file}{Colors.NC}")
+            log_info(f"stop: {Colors.BLUE}./stop.py{Colors.NC}")
             print()
             return True
         time.sleep(1)
 
-    log_warn("Server process is running but port is not listening yet")
-    log_info(f"Check logs with: tail -f {log_file}")
+    log_warn("server running but port not ready")
+    log_info(f"check logs: tail -f {log_file}")
     print()
     return True
 
@@ -395,7 +406,7 @@ def main():
 
     print()
     print(f"{Colors.MAUVE}[rebuild]{Colors.NC} {Icons.HAMMER}  "
-          f"Starting build process for {config['DISPLAY_NAME']}...")
+          f"building {config['DISPLAY_NAME']}...")
     print()
 
     if not check_requirements(config):
@@ -407,6 +418,8 @@ def main():
     stop_servers(config)
 
     print()
+    print(f"{Colors.SUBTEXT}{'─' * 40}{Colors.NC}")
+    print()
 
     build_backend_flag = not args.frontend_only
     build_frontend_flag = not args.backend_only
@@ -414,20 +427,25 @@ def main():
     if build_backend_flag:
         if not build_backend(config, args.skip_format):
             sys.exit(1)
+        print()
+        print(f"{Colors.SUBTEXT}{'─' * 40}{Colors.NC}")
+        print()
 
     if build_frontend_flag:
         if not build_frontend(config, args.skip_format):
             sys.exit(1)
+        print()
+        print(f"{Colors.SUBTEXT}{'─' * 40}{Colors.NC}")
+        print()
 
-    print()
-    log_success("Build complete")
+    log_success("build complete")
     print()
 
     if not args.no_server:
         if not start_server(config):
             sys.exit(1)
     else:
-        print(f"{Colors.BLUE}[rebuild]{Colors.NC} Skipping server start "
+        print(f"{Colors.BLUE}[rebuild]{Colors.NC} skipping server start "
               f"(--no-server flag)")
         print()
 

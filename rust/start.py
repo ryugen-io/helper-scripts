@@ -9,39 +9,41 @@ import time
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-REPO_ROOT = SCRIPT_DIR.parent
+REPO_ROOT = SCRIPT_DIR
 sys.path.insert(0, str(REPO_ROOT / 'sys' / 'theme'))
+sys.path.insert(0, str(REPO_ROOT / 'sys' / 'utils'))
 
 from theme import (  # noqa: E402
     Colors, Icons, log_success, log_error, log_warn, log_info
 )
+from xdg_paths import get_log_file, get_pid_file  # noqa: E402
 
 
 def load_env_config(repo_root: Path) -> dict:
-    """Load configuration from .env file"""
-    config = {
-        'SYS_DIR': 'sys',
-        'GITHUB_DIR': '.github',
-        'SCRIPT_DIRS': 'server,docker,dev,utils,rust',
-        'SERVER_BINARY': 'your-server-binary',
-        'DISPLAY_NAME': 'Your Server',
-        'SERVER_HOST': 'localhost',
-        'SERVER_PORT': '3000',
-        'PID_FILE': '.server.pid',
-        'LOG_FILE': 'server.log'
-    }
+    """Load configuration from sys/env/.env file"""
+    env_file = repo_root / 'sys' / 'env' / '.env'
 
-    sys_env_dir = repo_root / config['SYS_DIR'] / 'env'
-    for env_name in ['.env', '.env.example']:
-        env_file = sys_env_dir / env_name
-        if env_file.exists():
-            with open(env_file, 'r') as f:
-                for line in f:
-                    line = line.strip()
-                    if line and not line.startswith('#') and '=' in line:
-                        key, value = line.split('=', 1)
-                        config[key] = value
-            break
+    if not env_file.exists():
+        raise FileNotFoundError(
+            f"Configuration file not found: {env_file}\n"
+            f"Copy sys/env/.env.example to sys/env/.env and configure it."
+        )
+
+    config = {}
+    with open(env_file, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                key, value = line.split('=', 1)
+                # Remove quotes if present
+                value = value.strip('"').strip("'")
+                config[key] = value
+
+    # Validate required keys
+    required_keys = ['SERVER_BINARY', 'DISPLAY_NAME', 'SERVER_HOST', 'SERVER_PORT']
+    missing = [key for key in required_keys if key not in config]
+    if missing:
+        raise ValueError(f"Missing required config keys in .env: {', '.join(missing)}")
 
     return config
 
@@ -84,10 +86,19 @@ def main():
     config = load_env_config(REPO_ROOT)
     server_binary = config['SERVER_BINARY']
     display_name = config['DISPLAY_NAME']
-    pid_file = REPO_ROOT / config['PID_FILE']
-    log_file = REPO_ROOT / config['LOG_FILE']
+    app_name = 'sysrat'
     port = config['SERVER_PORT']
     host = config['SERVER_HOST']
+
+    # Get XDG-compliant paths
+    pid_file = get_pid_file(app_name, config)
+    log_file = get_log_file(app_name, config)
+
+    # Handle relative paths from config
+    if not pid_file.is_absolute():
+        pid_file = REPO_ROOT / pid_file
+    if not log_file.is_absolute():
+        log_file = REPO_ROOT / log_file
 
     print()
     print(f"{Colors.MAUVE}[start]{Colors.NC} {Icons.ROCKET}  "

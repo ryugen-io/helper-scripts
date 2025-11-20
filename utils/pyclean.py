@@ -9,10 +9,10 @@ import shutil
 from pathlib import Path
 from typing import List
 
-# Add .sys/theme to path for central theming
+# Add sys/theme to path for central theming
 SCRIPT_DIR = Path(__file__).resolve().parent
-REPO_ROOT = SCRIPT_DIR.parent
-sys.path.insert(0, str(REPO_ROOT / '.sys' / 'theme'))
+REPO_ROOT = SCRIPT_DIR.parent.parent
+sys.path.insert(0, str(REPO_ROOT / 'sys' / 'theme'))
 
 from theme import (  # noqa: E402
     Colors, Icons, log_success, log_error, log_warn, log_info
@@ -20,25 +20,21 @@ from theme import (  # noqa: E402
 
 
 def load_env_config(repo_root: Path) -> dict:
-    """Load configuration from .env file"""
-    config = {
-        'SYS_DIR': '.sys',
-        'GITHUB_DIR': '.github',
-        'SCRIPT_DIRS': 'docker,dev,utils'
-    }
+    """Load configuration from sys/env/.env.dev file"""
+    env_file = repo_root / 'sys' / 'env' / '.env.dev'
 
-    # Try .sys/env/.env first, fallback to .sys/env/.env.example
-    sys_env_dir = repo_root / config['SYS_DIR'] / 'env'
-    for env_name in ['.env', '.env.example']:
-        env_file = sys_env_dir / env_name
-        if env_file.exists():
-            with open(env_file, 'r') as f:
-                for line in f:
-                    line = line.strip()
-                    if line and not line.startswith('#') and '=' in line:
-                        key, value = line.split('=', 1)
-                        config[key] = value
-            break
+    if not env_file.exists():
+        raise FileNotFoundError(f"config not found: {env_file}")
+
+    config = {}
+    with open(env_file, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                key, value = line.split('=', 1)
+                # Remove quotes if present
+                value = value.strip('"').strip("'")
+                config[key] = value
 
     return config
 
@@ -96,24 +92,24 @@ class PyCacheCleaner:
                 rel_path = cache_dir
 
             if dry_run:
-                print(f"{Colors.YELLOW}{Icons.CLEAN}  {Colors.NC}{Colors.TEXT}Would remove: {Colors.NC}{Colors.SAPPHIRE}{rel_path}{Colors.NC} {Colors.SUBTEXT}({self.format_size(dir_size)}){Colors.NC}")
+                print(f"{Colors.YELLOW}{Icons.CLEAN}  {Colors.NC}would remove {Colors.SAPPHIRE}{cache_dir.name}{Colors.NC} {Colors.SUBTEXT}({self.format_size(dir_size)}){Colors.NC}")
             else:
                 try:
                     shutil.rmtree(cache_dir)
-                    print(f"{Colors.GREEN}{Icons.CLEAN}  {Colors.NC}{Colors.TEXT}Removed: {Colors.NC}{Colors.SAPPHIRE}{rel_path}{Colors.NC} {Colors.SUBTEXT}({self.format_size(dir_size)}){Colors.NC}")
+                    print(f"{Colors.GREEN}{Icons.CLEAN}  {Colors.NC}removed {Colors.SAPPHIRE}{cache_dir.name}{Colors.NC} {Colors.SUBTEXT}({self.format_size(dir_size)}){Colors.NC}")
                 except (PermissionError, OSError) as e:
                     log_error(f"Failed to remove {rel_path}: {e}")
 
     def run(self, base_path: Path, dry_run: bool) -> int:
         """Run cache cleaner"""
         print()
-        print(f"{Colors.MAUVE}[pyclean]{Colors.NC} {Icons.CLEAN}  Python Cache Cleaner")
+        print(f"{Colors.MAUVE}[pyclean]{Colors.NC} {Icons.CLEAN}  python cache cleaner")
         print()
 
         if dry_run:
             log_info("Dry run mode - no files will be deleted")
         else:
-            log_info("Scanning for Python cache directories")
+            log_info("scanning cache directories")
 
         print()
 
@@ -125,16 +121,15 @@ class PyCacheCleaner:
             log_success("No cache directories found - nothing to clean")
             return 0
 
-        log_info(f"Found {len(self.pycache_dirs)} __pycache__ director{'y' if len(self.pycache_dirs) == 1 else 'ies'}")
-        log_info(f"Found {len(self.mypy_cache_dirs)} .mypy_cache director{'y' if len(self.mypy_cache_dirs) == 1 else 'ies'}")
+        log_info(f"found {len(self.pycache_dirs)} __pycache__ director{'y' if len(self.pycache_dirs) == 1 else 'ies'}")
+        log_info(f"found {len(self.mypy_cache_dirs)} .mypy_cache director{'y' if len(self.mypy_cache_dirs) == 1 else 'ies'}")
         print()
 
         self.remove_caches(dry_run)
 
         # Print summary
         print()
-        print(f"{Colors.MAUVE}Summary{Colors.NC}")
-        print()
+        print(f"{Colors.MAUVE}[summary]{Colors.NC}")
         print(f"{Colors.TEXT}Total directories:     {Colors.NC}{Colors.SAPPHIRE}{total_dirs}{Colors.NC}")
         print(f"{Colors.TEXT}Total size:            {Colors.NC}{Colors.SAPPHIRE}{self.format_size(self.total_size)}{Colors.NC}")
         print()

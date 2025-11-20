@@ -8,35 +8,31 @@ import sys
 import re
 from pathlib import Path
 
-# Add .sys/theme to path for central theming
+# Add sys/theme to path for central theming
 SCRIPT_DIR = Path(__file__).resolve().parent
-REPO_ROOT = SCRIPT_DIR.parent
-sys.path.insert(0, str(REPO_ROOT / '.sys' / 'theme'))
+REPO_ROOT = SCRIPT_DIR.parent.parent
+sys.path.insert(0, str(REPO_ROOT / 'sys' / 'theme'))
 
 # Import central theme
 from theme import Colors, Icons, log_success, log_error, log_warn, log_info
 
 
 def load_env_config(repo_root: Path) -> dict:
-    """Load configuration from .env file"""
-    config = {
-        'SYS_DIR': '.sys',
-        'GITHUB_DIR': '.github',
-        'SCRIPT_DIRS': 'docker,dev,utils'
-    }
+    """Load configuration from sys/env/.env.dev file"""
+    env_file = repo_root / 'sys' / 'env' / '.env.dev'
 
-    # Try .sys/env/.env first, fallback to .sys/env/.env.example
-    sys_env_dir = repo_root / config['SYS_DIR'] / 'env'
-    for env_name in ['.env', '.env.example']:
-        env_file = sys_env_dir / env_name
-        if env_file.exists():
-            with open(env_file, 'r') as f:
-                for line in f:
-                    line = line.strip()
-                    if line and not line.startswith('#') and '=' in line:
-                        key, value = line.split('=', 1)
-                        config[key] = value
-            break
+    if not env_file.exists():
+        raise FileNotFoundError(f"config not found: {env_file}")
+
+    config = {}
+    with open(env_file, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                key, value = line.split('=', 1)
+                # Remove quotes if present
+                value = value.strip('"').strip("'")
+                config[key] = value
 
     return config
 
@@ -288,7 +284,7 @@ Examples:
     mode = "Preview mode" if args.dry_run else "Fixing Nerd Font icons"
     print(f"\n{tag} {mode}...\n")
 
-    log_info(f"Processing {len(files)} file(s)")
+    log_info(f"Processing {len(files)} files")
     if args.dry_run:
         log_warn("DRY RUN - No files will be modified")
     print()
@@ -313,7 +309,7 @@ Examples:
             print(f"  {Colors.TEXT}{filepath.name}{Colors.NC} {Colors.SUBTEXT}(no changes needed){Colors.NC}")
 
     # Summary
-    print(f"\n{Colors.GREEN}Summary:{Colors.NC}\n")
+    print(f"\n{Colors.GREEN}summary:{Colors.NC}\n")
     print(f"{Colors.BLUE}  Total files:     {Colors.NC}{total_files}")
     print(f"{Colors.GREEN}  Files fixed:     {Colors.NC}{fixed_files}")
     print(f"{Colors.TEXT}  No changes:      {Colors.NC}{total_files - fixed_files}")

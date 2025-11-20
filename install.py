@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import List, Tuple
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-sys.path.insert(0, str(SCRIPT_DIR / '.sys' / 'theme'))
+sys.path.insert(0, str(SCRIPT_DIR / 'sys' / 'theme'))
 
 from theme import (  # noqa: E402
     Colors, Icons, log_success, log_error, log_warn, log_info, log_header
@@ -20,12 +20,12 @@ from theme import (  # noqa: E402
 class Config:
     """Configuration class for environment variables."""
     def __init__(self):
-        self.sys_dir = '.sys'
+        self.sys_dir = 'sys'
         self.github_dir = '.github'
         self.load_env()
 
     def load_env(self):
-        """Load environment configuration from .sys/env/.env."""
+        """Load environment configuration from sys/env/.env."""
         env_path = SCRIPT_DIR / self.sys_dir / 'env' / '.env'
         if env_path.exists():
             with open(env_path, 'r') as f:
@@ -187,8 +187,8 @@ def deploy_theme(target_dir: Path) -> bool:
     """Deploy theme.sh to target directory."""
     log_info("Deploying theme files (required for all scripts)...")
 
-    theme_sh = SCRIPT_DIR / '.sys' / 'theme' / 'theme.sh'
-    theme_py = SCRIPT_DIR / '.sys' / 'theme' / 'theme.py'
+    theme_sh = SCRIPT_DIR / 'sys' / 'theme' / 'theme.sh'
+    theme_py = SCRIPT_DIR / 'sys' / 'theme' / 'theme.py'
 
     success = True
 

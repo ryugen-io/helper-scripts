@@ -10,32 +10,28 @@ from pathlib import Path
 from typing import List
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-REPO_ROOT = SCRIPT_DIR.parent
-sys.path.insert(0, str(REPO_ROOT / '.sys' / 'theme'))
+REPO_ROOT = SCRIPT_DIR.parent.parent
+sys.path.insert(0, str(REPO_ROOT / 'sys' / 'theme'))
 
 from theme import Colors, Icons, log_success, log_error, log_warn, log_info
 
 
 def load_env_config(repo_root: Path) -> dict:
-    """Load configuration from .env file"""
-    config = {
-        'SYS_DIR': '.sys',
-        'GITHUB_DIR': '.github',
-        'SCRIPT_DIRS': 'docker,dev,utils,rust',
-        'RUST_TOOLCHAIN': 'stable'
-    }
+    """Load configuration from sys/env/.env.dev file"""
+    env_file = repo_root / 'sys' / 'env' / '.env.dev'
 
-    sys_env_dir = repo_root / config['SYS_DIR'] / 'env'
-    for env_name in ['.env', '.env.example']:
-        env_file = sys_env_dir / env_name
-        if env_file.exists():
-            with open(env_file, 'r') as f:
-                for line in f:
-                    line = line.strip()
-                    if line and not line.startswith('#') and '=' in line:
-                        key, value = line.split('=', 1)
-                        config[key] = value
-            break
+    if not env_file.exists():
+        raise FileNotFoundError(f"config not found: {env_file}")
+
+    config = {}
+    with open(env_file, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                key, value = line.split('=', 1)
+                # Remove quotes if present
+                value = value.strip('"').strip("'")
+                config[key] = value
 
     return config
 
@@ -94,17 +90,17 @@ def find_cargo_projects(base_path: Path, recursive: bool) -> List[Path]:
     return sorted(set(projects))
 
 
-def lint_project(project_path: Path, deny_warnings: bool = False) -> int:
+def lint_project(project_path: Path, deny_warnings: bool = True) -> int:
     """
     Lint a Rust project with clippy
     Returns: 0=no warnings, 1=warnings found, 2=failed
+
+    NOTE: Always uses -D warnings to fail on any warnings
     """
     project_name = project_path.name
 
-    cmd = ['cargo', 'clippy', '--all-targets', '--all-features', '--']
-    if deny_warnings:
-        cmd.append('-D')
-        cmd.append('warnings')
+    # ALWAYS use -D warnings to catch all issues
+    cmd = ['cargo', 'clippy', '--all-targets', '--all-features', '--', '-D', 'warnings']
 
     try:
         result = subprocess.run(
@@ -116,10 +112,10 @@ def lint_project(project_path: Path, deny_warnings: bool = False) -> int:
         )
 
         if result.returncode == 0:
-            log_success(f"  {project_name} - No issues found")
+            log_success(f"  {project_name} - clean")
             return 0
         else:
-            log_warn(f"  {project_name} - Issues found")
+            log_warn(f"  {project_name} - issues found")
             if result.stdout:
                 print(f"{Colors.YELLOW}{result.stdout.strip()}{Colors.NC}")
             if result.stderr:
@@ -178,7 +174,7 @@ Examples:
     args = parser.parse_args()
 
     print()
-    print(f"{Colors.MAUVE}[clippy]{Colors.NC} {Icons.WARN}  Rust Linter")
+    print(f"{Colors.MAUVE}[clippy]{Colors.NC} {Icons.WARN}  rust linter")
     print()
 
     if not check_cargo():
@@ -188,7 +184,7 @@ Examples:
         return 1
 
     version = get_clippy_version()
-    log_info(f"Using {version}")
+    log_info(f"using {version}")
     print()
 
     base_path = Path(args.path)
@@ -200,10 +196,10 @@ Examples:
     projects = find_cargo_projects(base_path, args.recursive)
 
     if not projects:
-        log_error("No Rust projects found (no Cargo.toml)")
+        log_error("no rust projects found (no Cargo.toml)")
         return 1
 
-    log_info(f"Found {len(projects)} Rust project(s)")
+    log_info(f"found {len(projects)} rust project(s)")
     print()
 
     clean = 0
@@ -220,11 +216,11 @@ Examples:
             failed += 1
 
     print()
-    print(f"{Colors.MAUVE}Summary{Colors.NC}")
+    print(f"{Colors.MAUVE}summary{Colors.NC}")
     print()
 
     total = clean + warnings + failed
-    print(f"{Colors.TEXT}Total projects:      {Colors.NC}{Colors.SAPPHIRE}{total}{Colors.NC}")
+    print(f"{Colors.TEXT}total projects:      {Colors.NC}{Colors.SAPPHIRE}{total}{Colors.NC}")
 
     if clean > 0:
         print(f"{Colors.GREEN}No issues:           {Colors.NC}{Colors.SAPPHIRE}{clean}{Colors.NC}")
@@ -233,18 +229,18 @@ Examples:
         print(f"{Colors.YELLOW}Issues found:        {Colors.NC}{Colors.SAPPHIRE}{warnings}{Colors.NC}")
 
     if failed > 0:
-        print(f"{Colors.RED}Failed:              {Colors.NC}{Colors.SAPPHIRE}{failed}{Colors.NC}")
+        print(f"{Colors.RED}failed:              {Colors.NC}{Colors.SAPPHIRE}{failed}{Colors.NC}")
 
     print()
 
     if failed > 0:
-        log_error("Some projects failed to lint")
+        log_error("linting failed")
         return 1
     elif warnings > 0:
-        log_warn("Some projects have linting issues")
+        log_warn("linting issues found")
         return 1
     else:
-        log_success("All projects passed linting!")
+        log_success("all projects clean")
         return 0
 
 

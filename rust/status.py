@@ -5,43 +5,46 @@ Check the current status and stats of Rust server
 
 import sys
 import subprocess
+import time
 from datetime import datetime
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-REPO_ROOT = SCRIPT_DIR.parent
+REPO_ROOT = SCRIPT_DIR
 sys.path.insert(0, str(REPO_ROOT / 'sys' / 'theme'))
+sys.path.insert(0, str(REPO_ROOT / 'sys' / 'utils'))
 
 from theme import (  # noqa: E402
     Colors, Icons, log_success, log_error, log_info
 )
+from xdg_paths import get_log_file, get_pid_file  # noqa: E402
 
 
 def load_env_config(repo_root: Path) -> dict:
-    """Load configuration from .env file"""
-    config = {
-        'SYS_DIR': 'sys',
-        'GITHUB_DIR': '.github',
-        'SCRIPT_DIRS': 'server,docker,dev,utils,rust',
-        'SERVER_BINARY': 'your-server-binary',
-        'DISPLAY_NAME': 'Your Server',
-        'SERVER_HOST': 'localhost',
-        'SERVER_PORT': '3000',
-        'PID_FILE': '.server.pid',
-        'LOG_FILE': 'server.log'
-    }
+    """Load configuration from sys/env/.env file"""
+    env_file = repo_root / 'sys' / 'env' / '.env'
 
-    sys_env_dir = repo_root / config['SYS_DIR'] / 'env'
-    for env_name in ['.env', '.env.example']:
-        env_file = sys_env_dir / env_name
-        if env_file.exists():
-            with open(env_file, 'r') as f:
-                for line in f:
-                    line = line.strip()
-                    if line and not line.startswith('#') and '=' in line:
-                        key, value = line.split('=', 1)
-                        config[key] = value
-            break
+    if not env_file.exists():
+        raise FileNotFoundError(
+            f"Configuration file not found: {env_file}\n"
+            f"Copy sys/env/.env.example to sys/env/.env and configure it."
+        )
+
+    config = {}
+    with open(env_file, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                key, value = line.split('=', 1)
+                # Remove quotes if present
+                value = value.strip('"').strip("'")
+                config[key] = value
+
+    # Validate required keys
+    required_keys = ['SERVER_BINARY', 'DISPLAY_NAME', 'SERVER_HOST', 'SERVER_PORT']
+    missing = [key for key in required_keys if key not in config]
+    if missing:
+        raise ValueError(f"Missing required config keys in .env: {', '.join(missing)}")
 
     return config
 
@@ -157,10 +160,20 @@ def get_process_stats(pid: int) -> dict:
 def show_server_status(config: dict) -> bool:
     """Show detailed server status"""
     display_name = config['DISPLAY_NAME']
-    pid_file = REPO_ROOT / config['PID_FILE']
-    log_file = REPO_ROOT / config['LOG_FILE']
+    server_binary = config['SERVER_BINARY']
+    app_name = 'sysrat'
     port = config['SERVER_PORT']
     host = config['SERVER_HOST']
+
+    # Get XDG-compliant paths
+    pid_file = get_pid_file(app_name, config)
+    log_file = get_log_file(app_name, config)
+
+    # Handle relative paths from config
+    if not pid_file.is_absolute():
+        pid_file = REPO_ROOT / pid_file
+    if not log_file.is_absolute():
+        log_file = REPO_ROOT / log_file
 
     print(f"{Colors.MAUVE}{Icons.SERVER}  {display_name}{Colors.NC}")
     print()
@@ -230,21 +243,28 @@ def main():
     """Main execution"""
     config = load_env_config(REPO_ROOT)
     display_name = config['DISPLAY_NAME']
+    server_binary = config['SERVER_BINARY']
+    host = config['SERVER_HOST']
+    port = config['SERVER_PORT']
 
     print()
-    print(f"{Colors.MAUVE}[status]{Colors.NC} {Icons.ROCKET}  "
-          f"Checking {display_name} status...")
+    print(f"{Colors.MAUVE}[status]{Colors.NC}   checking sysrat...")
     print()
 
     if show_server_status(config):
-        log_success("Server is running")
+        log_success("server running")
         print()
-        log_info(f"Logs: {Colors.BLUE}tail -f {config['LOG_FILE']}{Colors.NC}")
-        log_info(f"Stop: {Colors.BLUE}./stop.py{Colors.NC}")
+        # Get log file path for display
+        app_name = 'sysrat'
+        log_file = get_log_file(app_name, config)
+        if not log_file.is_absolute():
+            log_file = REPO_ROOT / log_file
+        log_info(f"logs: {Colors.BLUE}tail -f {log_file}{Colors.NC}")
+        log_info(f"stop: {Colors.BLUE}./stop.py{Colors.NC}")
     else:
-        log_error("Server is not running")
+        log_error("server not running")
         print()
-        log_info(f"Start server with: {Colors.BLUE}./start.py{Colors.NC}")
+        log_info(f"start: {Colors.BLUE}./start.py{Colors.NC}")
 
     print()
 

@@ -9,35 +9,31 @@ import re
 from pathlib import Path
 from typing import Dict, List, Tuple
 
-# Add .sys/theme to path for central theming
+# Add sys/theme to path for central theming
 SCRIPT_DIR = Path(__file__).resolve().parent
-REPO_ROOT = SCRIPT_DIR.parent
-sys.path.insert(0, str(REPO_ROOT / '.sys' / 'theme'))
+REPO_ROOT = SCRIPT_DIR.parent.parent
+sys.path.insert(0, str(REPO_ROOT / 'sys' / 'theme'))
 
 # Import central theme
 from theme import Colors, Icons, log_success, log_error, log_warn, log_info
 
 
 def load_env_config(repo_root: Path) -> dict:
-    """Load configuration from .env file"""
-    config = {
-        'SYS_DIR': '.sys',
-        'GITHUB_DIR': '.github',
-        'SCRIPT_DIRS': 'docker,dev,utils'
-    }
+    """Load configuration from sys/env/.env.dev file"""
+    env_file = repo_root / 'sys' / 'env' / '.env.dev'
 
-    # Try .sys/env/.env first, fallback to .sys/env/.env.example
-    sys_env_dir = repo_root / config['SYS_DIR'] / 'env'
-    for env_name in ['.env', '.env.example']:
-        env_file = sys_env_dir / env_name
-        if env_file.exists():
-            with open(env_file, 'r') as f:
-                for line in f:
-                    line = line.strip()
-                    if line and not line.startswith('#') and '=' in line:
-                        key, value = line.split('=', 1)
-                        config[key] = value
-            break
+    if not env_file.exists():
+        raise FileNotFoundError(f"config not found: {env_file}")
+
+    config = {}
+    with open(env_file, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                key, value = line.split('=', 1)
+                # Remove quotes if present
+                value = value.strip('"').strip("'")
+                config[key] = value
 
     return config
 
@@ -104,7 +100,7 @@ def count_lines(filepath: Path) -> FileStats:
     return stats
 
 
-def scan_files(base_path: Path, types: List[str], recursive: bool) -> List[Path]:
+def scan_files(base_path: Path, types: List[str], recursive: bool, exclude_dirs: List[str], exclude_files: List[str]) -> List[Path]:
     """Scan for files to analyze"""
     files = []
 
@@ -114,7 +110,27 @@ def scan_files(base_path: Path, types: List[str], recursive: bool) -> List[Path]
         for ext in types:
             ext = ext.lstrip('*.')
             pattern = f'**/*.{ext}' if recursive else f'*.{ext}'
-            files.extend(base_path.glob(pattern))
+            matched_files = base_path.glob(pattern)
+
+            # Filter out excluded directories and files
+            for filepath in matched_files:
+                should_exclude = False
+
+                # Check excluded directories
+                for exclude_dir in exclude_dirs:
+                    if exclude_dir in filepath.parts:
+                        should_exclude = True
+                        break
+
+                # Check excluded files
+                if not should_exclude:
+                    for exclude_file in exclude_files:
+                        if filepath.name == exclude_file:
+                            should_exclude = True
+                            break
+
+                if not should_exclude:
+                    files.append(filepath)
 
     return sorted(files)
 
@@ -128,17 +144,20 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog='''
 Examples:
-  # Count lines in all Python files
+  # Count lines in entire repository (recursive by default, excludes target/)
+  python3 lines.py
+
+  # Count lines in all Python files recursively
   python3 lines.py --types py
 
-  # Count lines in shell scripts with warning threshold
-  python3 lines.py --types sh --limit 200
+  # Count lines only in current directory (no recursion)
+  python3 lines.py --no-recursive
 
-  # Count lines recursively in project
-  python3 lines.py --path /path/to/project --types py js ts --recursive
+  # Count lines with custom exclusions
+  python3 lines.py --exclude target dist build
 
-  # Count lines in multiple file types
-  python3 lines.py --types rs py sh js --recursive
+  # Count lines in multiple file types with custom limit
+  python3 lines.py --types rs py sh js --limit 300
         '''
     )
 
@@ -159,7 +178,29 @@ Examples:
     parser.add_argument(
         '-r', '--recursive',
         action='store_true',
-        help='Search recursively in subdirectories'
+        default=True,
+        help='Search recursively in subdirectories (default: True)'
+    )
+
+    parser.add_argument(
+        '--no-recursive',
+        action='store_false',
+        dest='recursive',
+        help='Disable recursive search (only scan top-level directory)'
+    )
+
+    parser.add_argument(
+        '-e', '--exclude',
+        nargs='+',
+        default=['target', '.git', 'node_modules', 'dist', '__pycache__', '.venv', 'venv', 'sys'],
+        help='Directories to exclude from scanning (default: target .git node_modules dist __pycache__ .venv venv sys)'
+    )
+
+    parser.add_argument(
+        '--exclude-files',
+        nargs='+',
+        default=['rebuild.py', 'start.py', 'stop.py', 'status.py'],
+        help='Files to exclude from scanning (default: rebuild.py start.py stop.py status.py)'
     )
 
     parser.add_argument(
@@ -178,7 +219,7 @@ Examples:
         return 1
 
     # Scan files
-    files = scan_files(base_path, args.types, args.recursive)
+    files = scan_files(base_path, args.types, args.recursive, args.exclude, args.exclude_files)
 
     if not files:
         log_error(f"No files found matching types: {', '.join(args.types)}")
@@ -187,7 +228,7 @@ Examples:
     print()
     print(f"{Colors.MAUVE}[lines]{Colors.NC} {Colors.BLUE}{Icons.CHART}{Colors.NC} Analyzing lines of code...")
     print()
-    log_info(f"Processing {len(files)} file(s) with limit: {args.limit} lines")
+    log_info(f"Processing {len(files)} files with limit: {args.limit} lines")
     print()
 
     # Analyze files
@@ -249,7 +290,7 @@ Examples:
 
     # Print summary
     print()
-    print(f"{Colors.GREEN}{Icons.CHART}  Summary:{Colors.NC}")
+    print(f"{Colors.GREEN}{Icons.CHART}  summary:{Colors.NC}")
     print()
     print(f"{Colors.TEXT}  Total files:     {Colors.NC}{total_files:6d}")
     print(f"{Colors.TEXT}  Code lines:      {Colors.NC}{total_code:6d} {Colors.SUBTEXT}({code_pct:.1f}%){Colors.NC}")
@@ -264,7 +305,7 @@ Examples:
 
     # Check if we have files over the limit
     if over_limit > 0:
-        log_warn(f"{over_limit} file(s) exceed {args.limit} lines")
+        log_warn(f"{over_limit} files exceed {args.limit} lines")
     else:
         log_success(f"All files under {args.limit} lines!")
 
